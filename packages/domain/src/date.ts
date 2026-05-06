@@ -61,6 +61,33 @@ export function addDaysDateOnly(dateOnly: string, days: number): string {
   return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 }
 
+function daysInMonth(year: number, monthIndex: number): number {
+  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+}
+
+export function addMonthsDateOnly(dateOnly: string, months: number): string {
+  const [year, month, day] = dateOnly.split("-").map(Number);
+  const targetMonthOffset = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonthOffset / 12);
+  const targetMonthIndex = ((targetMonthOffset % 12) + 12) % 12;
+  const targetDay = Math.min(day, daysInMonth(targetYear, targetMonthIndex));
+
+  return `${targetYear}-${pad(targetMonthIndex + 1)}-${pad(targetDay)}`;
+}
+
+export function endDateFromDuration(startDate: string, years: number, months: number): string {
+  if (!isDateOnly(startDate)) {
+    return "";
+  }
+
+  const totalMonths = years * 12 + months;
+  if (!Number.isInteger(totalMonths) || totalMonths <= 0) {
+    return "";
+  }
+
+  return addDaysDateOnly(addMonthsDateOnly(startDate, totalMonths), -1);
+}
+
 export function isDateOnly(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }

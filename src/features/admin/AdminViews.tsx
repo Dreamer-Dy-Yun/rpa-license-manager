@@ -10,6 +10,7 @@ import type {
   UserPermissionRecord
 } from "@rpa-license/domain";
 import { formatDateTimeValue } from "@rpa-license/domain";
+import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface SolutionsViewProps {
   solutions: SolutionRecord[];
@@ -37,12 +38,9 @@ export function SolutionsView({ solutions, onSave, onDelete }: SolutionsViewProp
           event.currentTarget.reset();
         }}
       >
-        <Field name="solutionName" label="솔루션명" defaultValue={editing?.solutionName} required readOnly={Boolean(editing)} />
-        <Field name="manufacturerName" label="제조사명" defaultValue={editing?.manufacturerName} required />
-        <label className="field field-full">
-          <span>비고</span>
-          <textarea name="note" rows={3} defaultValue={editing?.note} />
-        </label>
+        <InputField name="solutionName" label="솔루션명" defaultValue={editing?.solutionName} required readOnly={Boolean(editing)} />
+        <InputField name="manufacturerName" label="제조사명" defaultValue={editing?.manufacturerName} required />
+        <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
         <div className="form-actions">
           <button className="primary-button" type="submit">저장</button>
           <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
@@ -109,12 +107,9 @@ export function PermissionsView({ permissions, referenceData, onSave }: Permissi
           event.currentTarget.reset();
         }}
       >
-        <Field name="email" label="사용자 이메일" type="email" defaultValue={editing?.email} required readOnly={Boolean(editing)} />
-        <Select name="role" label="권한 역할" values={referenceData.roles} defaultValue={editing?.role} required />
-        <label className="field field-full">
-          <span>비고</span>
-          <textarea name="note" rows={3} defaultValue={editing?.note} />
-        </label>
+        <InputField name="email" label="사용자 이메일" type="email" defaultValue={editing?.email} required readOnly={Boolean(editing)} />
+        <SelectField name="role" label="권한 역할" values={referenceData.roles} defaultValue={editing?.role} required />
+        <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
         <div className="form-actions">
           <button className="primary-button" type="submit">저장</button>
           <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
@@ -172,19 +167,9 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
           });
         }}
       >
-        <label className="field">
-          <span>설정키</span>
-          <select name="key" value={selected?.key ?? ""} onChange={(event) => setSelectedKey(event.target.value)}>
-            {settings.map((setting) => (
-              <option key={setting.key} value={setting.key}>{setting.key}</option>
-            ))}
-          </select>
-        </label>
-        <Field name="value" label="설정값" defaultValue={selected?.value} required />
-        <label className="field field-full">
-          <span>설명</span>
-          <textarea name="description" rows={3} defaultValue={selected?.description} />
-        </label>
+        <SelectField name="key" label="설정키" values={settings.map((setting) => setting.key)} value={selected?.key ?? ""} onChange={(event) => setSelectedKey(event.target.value)} placeholder={null} />
+        <InputField name="value" label="설정값" defaultValue={selected?.value} required />
+        <TextAreaField name="description" label="설명" className="field-full" rows={3} defaultValue={selected?.description} />
         <div className="form-actions">
           <button className="primary-button" type="submit" disabled={!selected}>저장</button>
         </div>
@@ -214,29 +199,6 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         {settings.length === 0 ? <p className="table-empty">시스템 설정이 없습니다.</p> : null}
       </div>
     </section>
-  );
-}
-
-function Field({ name, label, type = "text", defaultValue, required, readOnly }: { name: string; label: string; type?: string; defaultValue?: string; required?: boolean; readOnly?: boolean }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <input name={name} type={type} defaultValue={defaultValue} required={required} readOnly={readOnly} />
-    </label>
-  );
-}
-
-function Select({ name, label, values, defaultValue, required }: { name: string; label: string; values: readonly string[]; defaultValue?: string; required?: boolean }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <select name={name} defaultValue={defaultValue ?? ""} required={required}>
-        <option value="">선택</option>
-        {values.map((value) => (
-          <option key={value} value={value}>{value}</option>
-        ))}
-      </select>
-    </label>
   );
 }
 

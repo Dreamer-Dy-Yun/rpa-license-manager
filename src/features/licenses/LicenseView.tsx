@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  endDateFromDuration,
   filterLicenses,
   LICENSE_STATUS,
   type DeleteLicensePayload,
@@ -10,6 +11,7 @@ import {
   type ReturnLicensePayload,
   type SaveLicensePayload
 } from "@rpa-license/domain";
+import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface LicenseViewProps {
   licenses: LicenseViewRecord[];
@@ -22,6 +24,14 @@ interface LicenseViewProps {
   onReturn: (payload: ReturnLicensePayload) => Promise<void>;
   onDelete: (payload: DeleteLicensePayload) => Promise<void>;
 }
+
+interface DurationState {
+  years: string;
+  months: string;
+  activeKey: string;
+}
+
+const EMPTY_DURATION: DurationState = { years: "", months: "", activeKey: "" };
 
 export function LicenseView({
   licenses,
@@ -36,9 +46,64 @@ export function LicenseView({
 }: LicenseViewProps) {
   const [tab, setTab] = useState(canEdit ? "edit" : "list");
   const [editing, setEditing] = useState<LicenseViewRecord | null>(null);
+  const [dateValues, setDateValues] = useState({ startDate: "", endDate: "" });
+  const [duration, setDuration] = useState<DurationState>(EMPTY_DURATION);
   const [filters, setFilters] = useState<LicenseFilters>(initialSolution ? { solutionName: initialSolution } : {});
   const rows = useMemo(() => filterLicenses(licenses, filters), [licenses, filters]);
   const hasSolutions = referenceData.solutions.length > 0;
+
+  useEffect(() => {
+    setDateValues({
+      startDate: editing?.startDate ?? "",
+      endDate: editing?.endDate ?? ""
+    });
+    setDuration(EMPTY_DURATION);
+  }, [editing]);
+
+  function resetLicenseForm() {
+    setEditing(null);
+    setDateValues({ startDate: "", endDate: "" });
+    setDuration(EMPTY_DURATION);
+  }
+
+  function applyDuration(years: number, months: number, activeKey: string) {
+    const safeYears = Number.isInteger(years) && years > 0 ? years : 0;
+    const safeMonths = Number.isInteger(months) && months > 0 ? months : 0;
+    const endDate = endDateFromDuration(dateValues.startDate, safeYears, safeMonths);
+
+    if (!endDate) {
+      return;
+    }
+
+    setDuration({
+      years: safeYears ? String(safeYears) : "",
+      months: safeMonths ? String(safeMonths) : "",
+      activeKey
+    });
+    setDateValues((current) => ({ ...current, endDate }));
+  }
+
+  function applyCustomDuration() {
+    const years = Number(duration.years || "0");
+    const months = Number(duration.months || "0");
+    applyDuration(years, months, "custom");
+  }
+
+  function changeStartDate(startDate: string) {
+    setDateValues((current) => {
+      const years = Number(duration.years || "0");
+      const months = Number(duration.months || "0");
+      return {
+        startDate,
+        endDate: duration.activeKey ? endDateFromDuration(startDate, years, months) : current.endDate
+      };
+    });
+  }
+
+  function changeEndDate(endDate: string) {
+    setDateValues((current) => ({ ...current, endDate }));
+    setDuration(EMPTY_DURATION);
+  }
 
   return (
     <section className="stack">
@@ -61,30 +126,65 @@ export function LicenseView({
               classification: String(data.get("classification") ?? "") as SaveLicensePayload["classification"],
               deploymentType: String(data.get("deploymentType") ?? "") as SaveLicensePayload["deploymentType"],
               licenseRole: String(data.get("licenseRole") ?? "") as SaveLicensePayload["licenseRole"],
-              startDate: String(data.get("startDate") ?? ""),
-              endDate: String(data.get("endDate") ?? ""),
+              startDate: dateValues.startDate,
+              endDate: dateValues.endDate,
               note: String(data.get("note") ?? "")
             });
-            setEditing(null);
+            resetLicenseForm();
             event.currentTarget.reset();
           }}
         >
           {!hasSolutions ? <p className="form-message">먼저 솔루션을 등록해야 라이선스를 저장할 수 있습니다.</p> : null}
-          <Select name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={editing?.solutionName} required disabled={!hasSolutions} />
-          <Field name="customerName" label="고객사/기관명" defaultValue={editing?.customerName} required />
-          <Field name="licenseNumber" label="라이선스 번호" defaultValue={editing?.licenseNumber} required readOnly={Boolean(editing)} />
-          <Select name="classification" label="라이선스 구분" values={referenceData.classifications} defaultValue={editing?.classification} required />
-          <Select name="deploymentType" label="배포 방식" values={referenceData.deploymentTypes} defaultValue={editing?.deploymentType} required />
-          <Select name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={editing?.licenseRole} required />
-          <Field name="startDate" label="시작일" type="date" defaultValue={editing?.startDate} required />
-          <Field name="endDate" label="종료일" type="date" defaultValue={editing?.endDate} required />
-          <label className="field field-full">
-            <span>비고</span>
-            <textarea name="note" defaultValue={editing?.note} rows={3} />
-          </label>
+          <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={editing?.solutionName} required disabled={!hasSolutions} />
+          <InputField name="customerName" label="고객사/기관명" defaultValue={editing?.customerName} required />
+          <InputField name="licenseNumber" label="라이선스 번호" defaultValue={editing?.licenseNumber} required readOnly={Boolean(editing)} />
+          <SelectField name="classification" label="라이선스 구분" values={referenceData.classifications} defaultValue={editing?.classification} required />
+          <SelectField name="deploymentType" label="배포 방식" values={referenceData.deploymentTypes} defaultValue={editing?.deploymentType} required />
+          <SelectField name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={editing?.licenseRole} required />
+          <InputField name="startDate" label="시작일" type="date" value={dateValues.startDate} onChange={(event) => changeStartDate(event.target.value)} required />
+          <fieldset className="duration-field field-full">
+            <legend>기간 계산</legend>
+            <div className="duration-grid">
+              <InputField
+                className="duration-number-field"
+                name="durationYears"
+                label="연"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                value={duration.years}
+                onChange={(event) => setDuration((current) => ({ ...current, years: event.target.value, activeKey: "" }))}
+              />
+              <InputField
+                className="duration-number-field"
+                name="durationMonths"
+                label="개월"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                value={duration.months}
+                onChange={(event) => setDuration((current) => ({ ...current, months: event.target.value, activeKey: "" }))}
+              />
+              <button className={duration.activeKey === "custom" ? "secondary-button is-active" : "secondary-button"} type="button" onClick={applyCustomDuration} disabled={!dateValues.startDate}>
+                적용
+              </button>
+              <div className="duration-shortcuts" aria-label="기간 빠른 선택">
+                <DurationButton label="1년" active={duration.activeKey === "1y"} disabled={!dateValues.startDate} onClick={() => applyDuration(1, 0, "1y")} />
+                <DurationButton label="2년" active={duration.activeKey === "2y"} disabled={!dateValues.startDate} onClick={() => applyDuration(2, 0, "2y")} />
+                <DurationButton label="3년" active={duration.activeKey === "3y"} disabled={!dateValues.startDate} onClick={() => applyDuration(3, 0, "3y")} />
+                <DurationButton label="1개월" active={duration.activeKey === "1m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 1, "1m")} />
+                <DurationButton label="2개월" active={duration.activeKey === "2m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 2, "2m")} />
+                <DurationButton label="6개월" active={duration.activeKey === "6m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 6, "6m")} />
+              </div>
+            </div>
+          </fieldset>
+          <InputField name="endDate" label="종료일" type="date" value={dateValues.endDate} onChange={(event) => changeEndDate(event.target.value)} required />
+          <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={!hasSolutions}>저장</button>
-            <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
+            <button className="ghost-button" type="button" onClick={resetLicenseForm}>초기화</button>
           </div>
         </form>
       ) : null}
@@ -106,12 +206,12 @@ export function LicenseView({
               });
             }}
           >
-            <Select name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={filters.solutionName} includeAll />
-            <Select name="status" label="상태" values={referenceData.licenseStatuses} defaultValue={filters.status} includeAll />
-            <Field name="licenseNumber" label="라이선스 번호" />
-            <Field name="customerName" label="고객사/기관명" />
-            <Field name="recipient" label="수령자" />
-            <Select name="expirationFlag" label="만료 구분" values={["만료", "만료예정"]} defaultValue={filters.expirationFlag} includeAll />
+            <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={filters.solutionName} includeAll />
+            <SelectField name="status" label="상태" values={referenceData.licenseStatuses} defaultValue={filters.status} includeAll />
+            <InputField name="licenseNumber" label="라이선스 번호" />
+            <InputField name="customerName" label="고객사/기관명" />
+            <InputField name="recipient" label="수령자" />
+            <SelectField name="expirationFlag" label="만료 구분" values={["만료", "만료예정"]} defaultValue={filters.expirationFlag} includeAll />
             <div className="form-actions">
               <button className="secondary-button" type="submit">필터 적용</button>
               <button className="ghost-button" type="button" onClick={() => setFilters({})}>초기화</button>
@@ -168,26 +268,11 @@ export function LicenseView({
   );
 }
 
-function Field({ name, label, type = "text", defaultValue, required, readOnly }: { name: string; label: string; type?: string; defaultValue?: string; required?: boolean; readOnly?: boolean }) {
+function DurationButton({ label, active, disabled, onClick }: { label: string; active: boolean; disabled: boolean; onClick: () => void }) {
   return (
-    <label className="field">
-      <span>{label}</span>
-      <input name={name} type={type} defaultValue={defaultValue} required={required} readOnly={readOnly} />
-    </label>
-  );
-}
-
-function Select({ name, label, values, defaultValue, includeAll, required, disabled }: { name: string; label: string; values: readonly string[]; defaultValue?: string; includeAll?: boolean; required?: boolean; disabled?: boolean }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <select name={name} defaultValue={defaultValue ?? ""} required={required} disabled={disabled}>
-        {includeAll ? <option value="">전체</option> : <option value="">선택</option>}
-        {values.map((value) => (
-          <option key={value} value={value}>{value}</option>
-        ))}
-      </select>
-    </label>
+    <button className={active ? "choice-button is-active" : "choice-button"} type="button" disabled={disabled} onClick={onClick}>
+      {label}
+    </button>
   );
 }
 
@@ -214,4 +299,3 @@ async function remove(licenseNumber: string, onDelete: LicenseViewProps["onDelet
   const note = window.prompt("삭제 비고를 입력해 주세요. 필요 없으면 비워두세요.") ?? "";
   await onDelete({ licenseNumber, note });
 }
-

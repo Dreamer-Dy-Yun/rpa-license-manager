@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LICENSE_STATUS } from "./constants.js";
+import { endDateFromDuration } from "./date.js";
 import { evaluateLicense, sortLicenses } from "./licenseRules.js";
 import type { DateTimeValue, LicenseRecord } from "./types.js";
 
@@ -47,5 +48,10 @@ describe("license rules", () => {
     const expired = evaluateLicense({ ...base, licenseNumber: "C", storedStatus: "사용가능", endDate: "2026-01-01" }, 30, "2026-05-06");
 
     expect([expired, inUse, available].sort(sortLicenses).map((row) => row.licenseNumber)).toEqual(["A", "B", "C"]);
+  });
+
+  it("calculates inclusive end date from start date and duration", () => {
+    expect(endDateFromDuration("2026-05-06", 1, 0)).toBe("2027-05-05");
+    expect(endDateFromDuration("2026-01-31", 0, 1)).toBe("2026-02-27");
   });
 });

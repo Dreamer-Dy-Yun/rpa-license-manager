@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { filterHistory, formatDateTimeValue, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
+import { InputField, SelectField } from "../../shared/ui/FormFields";
 
 interface HistoryViewProps {
   history: HistoryRecord[];
@@ -26,11 +27,11 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
           });
         }}
       >
-        <Select name="solutionName" label="솔루션명" values={referenceData.solutions} includeAll />
-        <Select name="eventType" label="이벤트 종류" values={[...referenceData.historyEventTypes]} includeAll />
-        <Field name="licenseNumber" label="라이선스 번호" />
-        <Field name="operatorEmail" label="작업자" />
-        <Field name="recipient" label="수령자" />
+        <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} includeAll />
+        <SelectField name="eventType" label="이벤트 종류" values={[...referenceData.historyEventTypes]} includeAll />
+        <InputField name="licenseNumber" label="라이선스 번호" />
+        <InputField name="operatorEmail" label="작업자" />
+        <InputField name="recipient" label="수령자" />
         <div className="form-actions">
           <button className="secondary-button" type="submit">필터 적용</button>
           <button className="ghost-button" type="button" onClick={() => setFilters({})}>초기화</button>
@@ -72,28 +73,5 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
         {rows.length === 0 ? <p className="table-empty">조회 결과가 없습니다.</p> : null}
       </div>
     </section>
-  );
-}
-
-function Field({ name, label }: { name: string; label: string }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <input name={name} type="text" />
-    </label>
-  );
-}
-
-function Select({ name, label, values, includeAll }: { name: string; label: string; values: readonly string[]; includeAll?: boolean }) {
-  return (
-    <label className="field">
-      <span>{label}</span>
-      <select name={name}>
-        {includeAll ? <option value="">전체</option> : null}
-        {values.map((value) => (
-          <option key={value} value={value}>{value}</option>
-        ))}
-      </select>
-    </label>
   );
 }
