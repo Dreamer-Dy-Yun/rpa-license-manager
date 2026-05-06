@@ -55,7 +55,7 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.id}>
-                <td>{formatDateTimeValue(row.eventAt)}</td>
+                <td className="history-time-cell"><HistoryTime value={row.eventAt} /></td>
                 <td>{row.eventType}</td>
                 <td>{row.licenseNumber}</td>
                 <td>{row.solutionName}</td>
@@ -74,5 +74,19 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
         {rows.length === 0 ? <TableEmpty>조회 결과가 없습니다.</TableEmpty> : null}
       </TablePanel>
     </Stack>
+  );
+}
+
+function HistoryTime({ value }: { value: HistoryRecord["eventAt"] }) {
+  const full = formatDateTimeValue(value);
+  if (!full) {
+    return <span>-</span>;
+  }
+
+  return (
+    <span className="history-time" title={full}>
+      <span className="history-time-date">{full.slice(2, 10).replaceAll("-", ".")}</span>
+      <span className="history-time-clock">{full.slice(11, 16)}</span>
+    </span>
   );
 }

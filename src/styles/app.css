@@ -517,6 +517,28 @@ button:disabled {
   gap: 6px;
 }
 
+.history-time-cell {
+  width: 82px;
+  white-space: nowrap;
+}
+
+.history-time {
+  display: grid;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.history-time-date {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.history-time-clock {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .status {
   display: inline-flex;
   align-items: center;
