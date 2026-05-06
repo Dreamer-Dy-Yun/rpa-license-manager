@@ -142,22 +142,24 @@ export function LicenseView({
           <SelectField name="classification" label="라이선스 구분" values={referenceData.classifications} defaultValue={editing?.classification} required />
           <SelectField name="deploymentType" label="배포 방식" values={referenceData.deploymentTypes} defaultValue={editing?.deploymentType} required />
           <SelectField name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={editing?.licenseRole} required />
-          <DateField name="startDate" label="시작일" value={dateValues.startDate} onValueChange={changeStartDate} required />
-          <SelectField
-            name="durationYears"
-            label="기간(년)"
-            values={YEAR_OPTIONS}
-            value={duration.years}
-            onChange={(event) => changeDuration({ ...duration, years: event.target.value })}
-          />
-          <SelectField
-            name="durationMonths"
-            label="기간(개월)"
-            values={MONTH_OPTIONS}
-            value={duration.months}
-            onChange={(event) => changeDuration({ ...duration, months: event.target.value })}
-          />
-          <DateField name="endDate" label="종료일" value={dateValues.endDate} onValueChange={changeEndDate} required />
+          <div className="license-date-grid field-full" role="group" aria-label="라이선스 기간">
+            <DateField name="startDate" label="시작일" value={dateValues.startDate} onValueChange={changeStartDate} required />
+            <SelectField
+              name="durationYears"
+              label="기간(년)"
+              values={YEAR_OPTIONS}
+              value={duration.years}
+              onChange={(event) => changeDuration({ ...duration, years: event.target.value })}
+            />
+            <SelectField
+              name="durationMonths"
+              label="기간(개월)"
+              values={MONTH_OPTIONS}
+              value={duration.months}
+              onChange={(event) => changeDuration({ ...duration, months: event.target.value })}
+            />
+            <DateField name="endDate" label="종료일" value={dateValues.endDate} onValueChange={changeEndDate} required />
+          </div>
           <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
           <FormActions>
             <Button variant="primary" type="submit" disabled={!hasSolutions}>저장</Button>

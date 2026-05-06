@@ -380,6 +380,13 @@ button:disabled {
   gap: 16px;
 }
 
+.license-date-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(110px, 0.7fr) minmax(110px, 0.7fr) minmax(180px, 1.2fr);
+  gap: 16px;
+  align-items: end;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -607,7 +614,8 @@ pre {
   }
 
   .form-grid,
-  .filter-grid {
+  .filter-grid,
+  .license-date-grid {
     grid-template-columns: 1fr;
   }
 
