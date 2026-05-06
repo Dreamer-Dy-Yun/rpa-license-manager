@@ -2,9 +2,227 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email is string;
+    }
+
+    function userPermissionPath() {
+      return /databases/$(database)/documents/userPermissions/$(request.auth.token.email);
+    }
+
+    function hasPermissionDoc() {
+      return signedIn() && exists(userPermissionPath());
+    }
+
+    function userRole() {
+      return hasPermissionDoc() ? get(userPermissionPath()).data.role : '권한없음';
+    }
+
+    function isAdmin() {
+      return userRole() == '관리자';
+    }
+
+    function isOperator() {
+      return userRole() == '운영자';
+    }
+
+    function canReadApp() {
+      return userRole() in ['관리자', '운영자', '조회자'];
+    }
+
+    function canWriteLicense() {
+      return isAdmin() || isOperator();
+    }
+
+    function isString(value) {
+      return value is string;
+    }
+
+    function validAuditCreate(data) {
+      return isString(data.createdAt)
+        && isString(data.createdByEmail)
+        && isString(data.updatedAt)
+        && isString(data.updatedByEmail);
+    }
+
+    function validAuditUpdate(data) {
+      return isString(data.createdAt)
+        && isString(data.createdByEmail)
+        && isString(data.updatedAt)
+        && isString(data.updatedByEmail)
+        && data.createdAt == resource.data.createdAt
+        && data.createdByEmail == resource.data.createdByEmail;
+    }
+
+    function validSolution(data) {
+      return data.keys().hasOnly([
+          'solutionName',
+          'manufacturerName',
+          'note',
+          'createdAt',
+          'createdByEmail',
+          'updatedAt',
+          'updatedByEmail'
+        ])
+        && isString(data.solutionName)
+        && isString(data.manufacturerName)
+        && isString(data.note);
+    }
+
+    function validLicense(data) {
+      return data.keys().hasOnly([
+          'solutionName',
+          'customerName',
+          'licenseNumber',
+          'classification',
+          'deploymentType',
+          'licenseRole',
+          'startDate',
+          'endDate',
+          'storedStatus',
+          'currentIssuerEmail',
+          'currentRecipient',
+          'currentIssuedAt',
+          'note',
+          'createdAt',
+          'createdByEmail',
+          'updatedAt',
+          'updatedByEmail'
+        ])
+        && isString(data.solutionName)
+        && isString(data.customerName)
+        && isString(data.licenseNumber)
+        && data.classification in ['구매', '테스트', '기타']
+        && data.deploymentType in ['Attended', 'Unattended', '해당없음', '기타']
+        && data.licenseRole in ['Bot', 'Designer', 'Orchestrator']
+        && isString(data.startDate)
+        && isString(data.endDate)
+        && data.storedStatus in ['사용가능', '사용중']
+        && isString(data.currentIssuerEmail)
+        && isString(data.currentRecipient)
+        && isString(data.currentIssuedAt)
+        && isString(data.note);
+    }
+
+    function validHistory(data) {
+      return data.keys().hasOnly([
+          'eventAt',
+          'eventType',
+          'licenseNumber',
+          'solutionName',
+          'customerName',
+          'actorEmail',
+          'recipient',
+          'note',
+          'changeDetails',
+          'deleteSnapshot',
+          'sourceType'
+        ])
+        && isString(data.eventAt)
+        && data.eventType in ['등록', '수정', '불출', '회수', '삭제']
+        && isString(data.licenseNumber)
+        && isString(data.solutionName)
+        && isString(data.customerName)
+        && isString(data.actorEmail)
+        && isString(data.recipient)
+        && isString(data.note)
+        && isString(data.changeDetails)
+        && isString(data.deleteSnapshot)
+        && data.sourceType == '웹앱';
+    }
+
+    function validContact(data) {
+      return data.keys().hasOnly([
+          'id',
+          'solutionName',
+          'organizationName',
+          'contactName',
+          'position',
+          'phoneNumber',
+          'email',
+          'note',
+          'createdAt',
+          'createdByEmail',
+          'updatedAt',
+          'updatedByEmail'
+        ])
+        && isString(data.id)
+        && isString(data.solutionName)
+        && isString(data.organizationName)
+        && isString(data.contactName)
+        && isString(data.position)
+        && isString(data.phoneNumber)
+        && isString(data.email)
+        && isString(data.note);
+    }
+
+    function validPermission(data, email) {
+      return data.keys().hasOnly([
+          'email',
+          'role',
+          'note',
+          'createdAt',
+          'createdByEmail',
+          'updatedAt',
+          'updatedByEmail'
+        ])
+        && data.email == email
+        && data.role in ['관리자', '운영자', '조회자', '권한없음']
+        && isString(data.note);
+    }
+
+    function validSetting(data) {
+      return data.keys().hasOnly(['key', 'value', 'description', 'updatedAt', 'updatedByEmail'])
+        && data.key in ['만료예정기준일수', '타임존']
+        && isString(data.value)
+        && isString(data.description)
+        && isString(data.updatedAt)
+        && isString(data.updatedByEmail);
+    }
+
+    match /solutions/{solutionId} {
+      allow read: if canReadApp();
+      allow create: if isAdmin() && validSolution(request.resource.data) && validAuditCreate(request.resource.data);
+      allow update: if isAdmin() && validSolution(request.resource.data) && validAuditUpdate(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /licenses/{licenseId} {
+      allow read: if canReadApp();
+      allow create: if canWriteLicense() && validLicense(request.resource.data) && validAuditCreate(request.resource.data);
+      allow update: if canWriteLicense() && validLicense(request.resource.data) && validAuditUpdate(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /licenseHistory/{historyId} {
+      allow read: if canReadApp();
+      allow create: if canWriteLicense() && validHistory(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /contacts/{contactId} {
+      allow read: if canReadApp();
+      allow create: if isAdmin() && validContact(request.resource.data) && validAuditCreate(request.resource.data);
+      allow update: if isAdmin() && validContact(request.resource.data) && validAuditUpdate(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /userPermissions/{email} {
+      allow get: if signedIn() && (isAdmin() || email == request.auth.token.email);
+      allow list: if isAdmin();
+      allow create: if isAdmin() && validPermission(request.resource.data, email) && validAuditCreate(request.resource.data);
+      allow update: if isAdmin() && validPermission(request.resource.data, email) && validAuditUpdate(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /systemSettings/{settingId} {
+      allow read: if canReadApp();
+      allow create, update: if isAdmin() && validSetting(request.resource.data);
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
   }
 }
-

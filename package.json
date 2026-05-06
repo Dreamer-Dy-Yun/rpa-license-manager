@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/domain",
-    "functions"
+    "packages/domain"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -14,9 +13,7 @@
     "test": "npm run domain:build && vitest run",
     "build": "npm run domain:build && tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "functions:build": "npm run domain:build && npm --workspace rpa-license-functions run build",
-    "functions:test": "npm run domain:build && npm --workspace rpa-license-functions run test",
-    "validate": "npm run typecheck && npm run test && npm run build && npm run functions:build && npm run functions:test"
+    "validate": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
     "@rpa-license/domain": "file:packages/domain",
@@ -34,4 +31,3 @@
     "vitest": "^4.1.5"
   }
 }
-

@@ -1,17 +1,17 @@
 # API Contract
 
-프론트는 Firestore를 직접 읽거나 쓰지 않는다. 모든 업무 호출은 Firebase callable Functions를 통한다.
+프론트 화면은 `AppApi` 계약만 호출한다. Spark 무료 전용 구조에서는 `AppApi` 구현체가 Firebase Web SDK로 Firestore에 직접 접근한다.
 
 ## Common
 
 - 인증: Firebase Auth Google login
-- 오류: callable `HttpsError` 또는 프론트 `ApiError`
+- 오류: Firestore SDK 오류 또는 프론트 `ApiError`
 - 성공 응답: 함수별 데이터 반환
 - mutation 성공 응답: 최신 `BootstrapData` 반환
 
-## Callables
+## AppApi Methods
 
-| Callable | Auth | Role | Request | Response |
+| Method | Auth | Role | Request | Response |
 |---|---|---|---|---|
 | `bootstrapApp` | optional | any | none | `BootstrapData` |
 | `saveSolution` | required | 관리자 | `SaveSolutionPayload` | `BootstrapData` |
@@ -29,3 +29,6 @@
 
 Firebase 설정이 없거나 `VITE_USE_CONTRACT_MOCK=true`이면 프론트는 `contractMockApi`를 사용한다. 이 구현체는 임의 업무 데이터를 만들지 않고 빈 `BootstrapData`와 명시적 설정 상태만 반환한다.
 
+## Security Boundary
+
+프론트 검증은 사용자 경험용이다. 실제 보안 경계는 `firestore.rules`다.

@@ -1,12 +1,12 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type Auth, type User } from "firebase/auth";
-import { getFunctions, type Functions } from "firebase/functions";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 export interface FirebaseClient {
   app: FirebaseApp;
   auth: Auth;
-  functions: Functions;
+  db: Firestore;
   analytics: Promise<Analytics | null>;
 }
 
@@ -29,7 +29,6 @@ const requiredFirebaseConfig = [
   firebaseConfig.appId
 ];
 
-export const functionsRegion = import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION || "asia-northeast3";
 export const useContractMock = import.meta.env.VITE_USE_CONTRACT_MOCK === "true";
 
 export function hasFirebaseConfig(): boolean {
@@ -45,7 +44,7 @@ export function getFirebaseClient(): FirebaseClient {
   return {
     app,
     auth: getAuth(app),
-    functions: getFunctions(app, functionsRegion),
+    db: getFirestore(app),
     analytics: getAnalyticsIfSupported(app)
   };
 }

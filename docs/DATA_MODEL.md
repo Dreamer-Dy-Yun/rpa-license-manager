@@ -35,9 +35,9 @@
 
 사용자 권한.
 
-- Document id: email을 안전하게 인코딩한 값
+- Document id: 사용자 이메일 소문자
 - 권한 제거는 삭제가 아니라 `권한없음` 저장
-- 최초 로그인 사용자가 최초 관리자 seed 조건을 만족하면 `관리자`로 저장된다
+- Spark 무료 전용 구조에서는 최초 관리자 문서를 Firestore 콘솔에서 수동 생성한다
 
 ## Collection: `systemSettings`
 
@@ -45,4 +45,3 @@
 
 - Document id: setting key를 안전하게 인코딩한 값
 - Initial keys: `만료예정기준일수`, `타임존`
-
