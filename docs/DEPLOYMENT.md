@@ -25,6 +25,19 @@
 
 Firestore에는 별도 DB 비밀번호가 없다. 배포 자동화에는 `FIREBASE_SERVICE_ACCOUNT` secret이 필요하고, 런타임의 데이터 접근은 Cloud Functions의 Admin SDK 권한과 Firestore Rules로 통제한다.
 
+## 최초 1회 API 활성화
+
+배포 service account에 API 활성화 권한까지 주지 않는 경우, 프로젝트 소유자가 최초 1회 아래 API를 직접 활성화한다.
+
+- Cloud Build API: `cloudbuild.googleapis.com`
+- Cloud Functions API: `cloudfunctions.googleapis.com`
+- Artifact Registry API: `artifactregistry.googleapis.com`
+- Cloud Run Admin API: `run.googleapis.com`
+- Firebase Hosting API: `firebasehosting.googleapis.com`
+- Firestore API: `firestore.googleapis.com`
+
+GitHub Actions 로그에 `current credentials do not have permission to enable APIs`가 나오면, 위 API 중 꺼진 것을 콘솔에서 켠 뒤 workflow를 다시 실행한다.
+
 ## Service Account JSON 생성
 
 GitHub Actions가 Firebase CLI로 배포할 수 있도록 Google Cloud service account key를 GitHub secret에 넣는다.
