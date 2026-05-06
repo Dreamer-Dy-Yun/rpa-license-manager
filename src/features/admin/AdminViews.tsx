@@ -1,7 +1,9 @@
 import { useState } from "react";
 import type {
   DeleteSolutionPayload,
+  PermissionRequestRecord,
   ReferenceData,
+  ResolvePermissionRequestPayload,
   SaveSolutionPayload,
   SaveUserPermissionPayload,
   SolutionRecord,
@@ -9,7 +11,7 @@ import type {
   UpdateSystemSettingPayload,
   UserPermissionRecord
 } from "@rpa-license/domain";
-import { formatDateTimeValue } from "@rpa-license/domain";
+import { PERMISSION_REQUEST_STATUS, formatDateTimeValue } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 import { FormActions, FormPanel, Stack, TableActions, TableEmpty, TablePanel } from "../../shared/ui/Surface";
@@ -85,15 +87,56 @@ export function SolutionsView({ solutions, onSave, onDelete }: SolutionsViewProp
 
 interface PermissionsViewProps {
   permissions: UserPermissionRecord[];
+  permissionRequests: PermissionRequestRecord[];
   referenceData: ReferenceData;
   onSave: (payload: SaveUserPermissionPayload) => Promise<void>;
+  onResolve: (payload: ResolvePermissionRequestPayload) => Promise<void>;
 }
 
-export function PermissionsView({ permissions, referenceData, onSave }: PermissionsViewProps) {
+export function PermissionsView({ permissions, permissionRequests, referenceData, onSave, onResolve }: PermissionsViewProps) {
   const [editing, setEditing] = useState<UserPermissionRecord | null>(null);
 
   return (
     <Stack>
+      <TablePanel>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>요청자</th>
+              <th>요청 권한</th>
+              <th>상태</th>
+              <th>사유</th>
+              <th>요청일시</th>
+              <th>작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            {permissionRequests.map((row) => (
+              <tr key={row.email}>
+                <td>{row.email}</td>
+                <td>{row.requestedRole}</td>
+                <td>{row.status}</td>
+                <td>{row.reason}</td>
+                <td>{formatDateTimeValue(row.updatedAt) || "-"}</td>
+                <td>
+                  <TableActions>
+                    {row.status === PERMISSION_REQUEST_STATUS.PENDING ? (
+                      <>
+                        <Button variant="table" onClick={() => resolvePermissionRequest(row, PERMISSION_REQUEST_STATUS.APPROVED, onResolve)}>승인</Button>
+                        <Button variant="table" onClick={() => resolvePermissionRequest(row, PERMISSION_REQUEST_STATUS.REJECTED, onResolve)}>거절</Button>
+                      </>
+                    ) : (
+                      <span className="muted-text">{row.reviewedByEmail || "-"}</span>
+                    )}
+                  </TableActions>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {permissionRequests.length === 0 ? <TableEmpty>권한 요청이 없습니다.</TableEmpty> : null}
+      </TablePanel>
+
       <FormPanel
         key={editing?.email ?? "new-permission"}
         onSubmit={async (event) => {
@@ -211,4 +254,15 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
 async function removeSolution(solutionName: string, onDelete: SolutionsViewProps["onDelete"]) {
   if (!window.confirm("이 솔루션을 삭제할까요? 연결된 데이터가 있으면 삭제되지 않습니다.")) return;
   await onDelete({ solutionName });
+}
+
+async function resolvePermissionRequest(
+  request: PermissionRequestRecord,
+  status: ResolvePermissionRequestPayload["status"],
+  onResolve: PermissionsViewProps["onResolve"]
+) {
+  const actionLabel = status === PERMISSION_REQUEST_STATUS.APPROVED ? "승인" : "거절";
+  const note = window.prompt(`${request.email}의 ${request.requestedRole} 권한 요청을 ${actionLabel}합니다. 관리자 메모를 입력해 주세요. 필요 없으면 비워두세요.`);
+  if (note === null) return;
+  await onResolve({ email: request.email, status, note });
 }

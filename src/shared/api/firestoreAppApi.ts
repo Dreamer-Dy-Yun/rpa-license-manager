@@ -25,6 +25,7 @@ import {
   LICENSE_ROLES,
   LICENSE_STATUS,
   MENU_ITEMS,
+  PERMISSION_REQUEST_STATUS,
   PUBLIC_PERMISSION_MESSAGE,
   ROLES,
   SETTING_KEYS,
@@ -50,12 +51,15 @@ import {
   type LicenseRecord,
   type LicenseView,
   type MenuItem,
+  type PermissionRequestRecord,
   type PermissionsAdminSectionData,
   type ReferenceData,
+  type ResolvePermissionRequestPayload,
   type ReturnLicensePayload,
   type Role,
   type SaveContactPayload,
   type SaveLicensePayload,
+  type SavePermissionRequestPayload,
   type SaveSolutionPayload,
   type SaveUserPermissionPayload,
   type SolutionRecord,
@@ -80,6 +84,8 @@ export const firestoreAppApi: AppApi = {
   loadSolutionsAdminData,
   loadPermissionsAdminData,
   loadSettingsAdminData,
+  savePermissionRequest,
+  resolvePermissionRequest: (payload) => mutate([ROLES.ADMIN], async ({ db, actor }) => resolvePermissionRequestRecord(db, actor, payload)),
   saveSolution: (payload) => mutate([ROLES.ADMIN], async ({ db, actor }) => saveSolutionRecord(db, actor, payload)),
   deleteSolution: (payload) => mutate([ROLES.ADMIN], async ({ db }) => deleteSolutionRecord(db, payload)),
   saveUserPermission: (payload) => mutate([ROLES.ADMIN], async ({ db, actor }) => saveUserPermissionRecord(db, actor, payload)),
@@ -96,12 +102,13 @@ async function bootstrapApp(): Promise<BootstrapData> {
   try {
     const { db } = getFirebaseClient();
     const user = await buildUserContext(db);
+    const permissionRequest = user.email && !user.canAccessApp ? await getPermissionRequest(db, user.email) : null;
 
     if (!user.canAccessApp) {
-      return emptyBootstrap(user, user.email ? PUBLIC_PERMISSION_MESSAGE : "로그인이 필요합니다.");
+      return emptyBootstrap(user, user.email ? PUBLIC_PERMISSION_MESSAGE : "로그인이 필요합니다.", permissionRequest);
     }
 
-    return emptyBootstrap(user);
+    return emptyBootstrap(user, undefined, permissionRequest);
   } catch (error) {
     throw normalizeApiError(error);
   }
@@ -161,7 +168,8 @@ async function loadSolutionsAdminData(): Promise<SolutionsAdminSectionData> {
 
 async function loadPermissionsAdminData(): Promise<PermissionsAdminSectionData> {
   return read([ROLES.ADMIN], async ({ db }) => ({
-    permissions: await listPermissions(db)
+    permissions: await listPermissions(db),
+    permissionRequests: await listPermissionRequests(db)
   }));
 }
 
@@ -204,6 +212,45 @@ async function mutate(
     }
 
     await action({ db, actor, role });
+    return await bootstrapApp();
+  } catch (error) {
+    throw normalizeApiError(error);
+  }
+}
+
+async function savePermissionRequest(payload: SavePermissionRequestPayload): Promise<BootstrapData> {
+  try {
+    const { db } = getFirebaseClient();
+    const actor = getActorEmail();
+    const requestedRole = payload.requestedRole;
+    const reason = payload.reason.trim();
+
+    if (!isRequestableRole(requestedRole)) {
+      throw new Error("요청할 수 없는 권한입니다.");
+    }
+    if (!reason) {
+      throw new Error("권한 요청 사유를 입력해 주세요.");
+    }
+
+    const ref = doc(db, COLLECTIONS.PERMISSION_REQUESTS, permissionDocId(actor));
+    const snapshot = await getDoc(ref);
+    const current = snapshot.data() as PermissionRequestRecord | undefined;
+    const now = Timestamp.now();
+
+    await setDoc(ref, {
+      email: actor,
+      requestedRole,
+      reason,
+      status: PERMISSION_REQUEST_STATUS.PENDING,
+      reviewedAt: null,
+      reviewedByEmail: "",
+      adminNote: "",
+      createdAt: current?.createdAt ?? now,
+      createdByEmail: current?.createdByEmail ?? actor,
+      updatedAt: now,
+      updatedByEmail: actor
+    } satisfies PermissionRequestRecord);
+
     return await bootstrapApp();
   } catch (error) {
     throw normalizeApiError(error);
@@ -308,6 +355,20 @@ async function listPermissions(db: Firestore): Promise<UserPermissionRecord[]> {
   return rows.sort((left, right) => left.email.localeCompare(right.email));
 }
 
+async function getPermissionRequest(db: Firestore, email: string): Promise<PermissionRequestRecord | null> {
+  const snapshot = await getDoc(doc(db, COLLECTIONS.PERMISSION_REQUESTS, permissionDocId(email)));
+  return snapshot.exists() ? snapshot.data() as PermissionRequestRecord : null;
+}
+
+async function listPermissionRequests(db: Firestore): Promise<PermissionRequestRecord[]> {
+  const rows = await listCollection<PermissionRequestRecord>(db, COLLECTIONS.PERMISSION_REQUESTS);
+  return rows.sort((left, right) => {
+    const statusDiff = permissionRequestStatusRank(left.status) - permissionRequestStatusRank(right.status);
+    if (statusDiff !== 0) return statusDiff;
+    return compareDateTimeAsc(right.updatedAt, left.updatedAt);
+  });
+}
+
 async function listSettings(db: Firestore): Promise<SystemSettingRecord[]> {
   const rows = await listCollection<SystemSettingRecord>(db, COLLECTIONS.SYSTEM_SETTINGS);
   const byKey = new Map(rows.map((row) => [row.key, row]));
@@ -404,10 +465,11 @@ function buildMenuByRole(role: Role): MenuItem[] {
   return menu;
 }
 
-function emptyBootstrap(user: UserContext, message?: string): BootstrapData {
+function emptyBootstrap(user: UserContext, message?: string, permissionRequest: PermissionRequestRecord | null = null): BootstrapData {
   return {
     appName: APP_NAME,
     user,
+    permissionRequest,
     dashboardCards: [],
     menu: buildMenuByRole(user.role),
     appData: {
@@ -419,6 +481,7 @@ function emptyBootstrap(user: UserContext, message?: string): BootstrapData {
     adminData: {
       solutions: [],
       permissions: [],
+      permissionRequests: [],
       settings: []
     },
     systemMessage: message
@@ -488,6 +551,57 @@ async function saveUserPermissionRecord(db: Firestore, actor: string, payload: S
     updatedAt: now,
     updatedByEmail: actor
   } satisfies UserPermissionRecord);
+}
+
+async function resolvePermissionRequestRecord(db: Firestore, actor: string, payload: ResolvePermissionRequestPayload): Promise<void> {
+  const email = payload.email.trim().toLocaleLowerCase("ko");
+  const status = payload.status;
+  const note = payload.note.trim();
+
+  if (!email) throw new Error("처리할 요청 이메일이 필요합니다.");
+  if (![PERMISSION_REQUEST_STATUS.APPROVED, PERMISSION_REQUEST_STATUS.REJECTED].includes(status)) {
+    throw new Error("지원하지 않는 요청 처리 상태입니다.");
+  }
+
+  const requestRef = doc(db, COLLECTIONS.PERMISSION_REQUESTS, permissionDocId(email));
+  const permissionRef = doc(db, COLLECTIONS.USER_PERMISSIONS, permissionDocId(email));
+
+  await runTransaction(db, async (transaction) => {
+    const requestSnapshot = await transaction.get(requestRef);
+    if (!requestSnapshot.exists()) {
+      throw new Error("권한 요청을 찾을 수 없습니다.");
+    }
+
+    const request = requestSnapshot.data() as PermissionRequestRecord;
+    if (request.status !== PERMISSION_REQUEST_STATUS.PENDING) {
+      throw new Error("대기 상태의 권한 요청만 처리할 수 있습니다.");
+    }
+
+    const now = Timestamp.now();
+    if (status === PERMISSION_REQUEST_STATUS.APPROVED) {
+      const permissionSnapshot = await transaction.get(permissionRef);
+      const currentPermission = permissionSnapshot.data() as UserPermissionRecord | undefined;
+      transaction.set(permissionRef, {
+        email,
+        role: request.requestedRole,
+        note: note || `권한 요청 승인: ${request.reason}`,
+        createdAt: currentPermission?.createdAt ?? now,
+        createdByEmail: currentPermission?.createdByEmail ?? actor,
+        updatedAt: now,
+        updatedByEmail: actor
+      } satisfies UserPermissionRecord);
+    }
+
+    transaction.set(requestRef, {
+      ...request,
+      status,
+      reviewedAt: now,
+      reviewedByEmail: actor,
+      adminNote: note,
+      updatedAt: now,
+      updatedByEmail: actor
+    } satisfies PermissionRequestRecord);
+  });
 }
 
 async function updateSystemSettingRecord(db: Firestore, actor: string, payload: UpdateSystemSettingPayload): Promise<void> {
@@ -747,6 +861,16 @@ function normalizeLicensePayload(payload: SaveLicensePayload): Pick<
 
 function isRole(value: unknown): value is Role {
   return Object.values(ROLES).includes(value as Role);
+}
+
+function isRequestableRole(value: unknown): value is PermissionRequestRecord["requestedRole"] {
+  return [ROLES.ADMIN, ROLES.OPERATOR, ROLES.VIEWER].includes(value as typeof ROLES.ADMIN | typeof ROLES.OPERATOR | typeof ROLES.VIEWER);
+}
+
+function permissionRequestStatusRank(status: PermissionRequestRecord["status"]): number {
+  if (status === PERMISSION_REQUEST_STATUS.PENDING) return 0;
+  if (status === PERMISSION_REQUEST_STATUS.REJECTED) return 1;
+  return 2;
 }
 
 function normalizeApiError(error: unknown): ApiError {

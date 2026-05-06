@@ -10,6 +10,7 @@ export const COLLECTIONS = {
   SOLUTIONS: "solutions",
   CONTACTS: "contacts",
   USER_PERMISSIONS: "userPermissions",
+  PERMISSION_REQUESTS: "permissionRequests",
   SYSTEM_SETTINGS: "systemSettings"
 } as const;
 
@@ -18,6 +19,12 @@ export const ROLES = {
   OPERATOR: "운영자",
   VIEWER: "조회자",
   NONE: "권한없음"
+} as const;
+
+export const PERMISSION_REQUEST_STATUS = {
+  PENDING: "대기",
+  APPROVED: "승인",
+  REJECTED: "거절"
 } as const;
 
 export const LICENSE_STATUS = {

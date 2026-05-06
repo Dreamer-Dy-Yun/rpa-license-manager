@@ -55,6 +55,7 @@ React 프론트엔드다. 화면은 API 계약을 호출하며, API 구현체가
 | `src/shared/firebase/*` | Firebase Web SDK 초기화와 Auth/Firestore 연결 |
 | `src/shared/lib/firestoreIds.ts` | Firestore 문서 ID 정규화 규칙 |
 | `src/shared/ui/*` | 화면 공통 입력/버튼/표면/액션 래퍼 컴포넌트 |
+| `src/features/access` | 권한 없는 로그인 사용자의 권한 요청 화면 |
 | `src/features/auth` | 로그인 상태 표시/조작 |
 | `src/features/dashboard` | 솔루션별 카드 요약 화면 |
 | `src/features/licenses` | 라이선스 등록/수정/조회/불출/회수/삭제 화면 |

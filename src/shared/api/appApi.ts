@@ -12,10 +12,12 @@ import type {
   ReturnLicensePayload,
   SaveContactPayload,
   SaveLicensePayload,
+  SavePermissionRequestPayload,
   SaveSolutionPayload,
   SaveUserPermissionPayload,
   SettingsAdminSectionData,
   SolutionsAdminSectionData,
+  ResolvePermissionRequestPayload,
   UpdateSystemSettingPayload
 } from "@rpa-license/domain";
 
@@ -28,6 +30,8 @@ export interface AppApi {
   loadSolutionsAdminData: () => Promise<SolutionsAdminSectionData>;
   loadPermissionsAdminData: () => Promise<PermissionsAdminSectionData>;
   loadSettingsAdminData: () => Promise<SettingsAdminSectionData>;
+  savePermissionRequest: (payload: SavePermissionRequestPayload) => Promise<BootstrapData>;
+  resolvePermissionRequest: (payload: ResolvePermissionRequestPayload) => Promise<BootstrapData>;
   saveSolution: (payload: SaveSolutionPayload) => Promise<BootstrapData>;
   deleteSolution: (payload: DeleteSolutionPayload) => Promise<BootstrapData>;
   saveUserPermission: (payload: SaveUserPermissionPayload) => Promise<BootstrapData>;

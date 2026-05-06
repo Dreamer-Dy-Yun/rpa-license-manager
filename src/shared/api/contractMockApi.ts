@@ -32,12 +32,14 @@ function emptyBootstrap(): BootstrapData {
   return {
     appName: APP_NAME,
     user,
+    permissionRequest: null,
     dashboardCards: [],
     menu: [{ key: "dashboard", label: "대시보드" }],
     appData: emptyAppData(),
     adminData: {
       solutions: [],
       permissions: [],
+      permissionRequests: [],
       settings: []
     },
     systemMessage: "Firebase 설정이 아직 없어 계약 확인용 빈 상태로 실행 중입니다."
@@ -67,8 +69,10 @@ export const contractMockApi: AppApi = {
     referenceData: emptyReferenceData()
   }),
   loadSolutionsAdminData: async () => ({ solutions: [] }),
-  loadPermissionsAdminData: async () => ({ permissions: [] }),
+  loadPermissionsAdminData: async () => ({ permissions: [], permissionRequests: [] }),
   loadSettingsAdminData: async () => ({ settings: [] }),
+  savePermissionRequest: rejectMutation,
+  resolvePermissionRequest: rejectMutation,
   saveSolution: rejectMutation,
   deleteSolution: rejectMutation,
   saveUserPermission: rejectMutation,

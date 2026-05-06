@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ROLES, type BootstrapData } from "@rpa-license/domain";
 import { SolutionsView, PermissionsView, SettingsView } from "../features/admin/AdminViews";
 import { useAuthState } from "../features/auth/useAuthState";
+import { PermissionRequestView } from "../features/access/PermissionRequestView";
 import { ContactsView } from "../features/contacts/ContactsView";
 import { DashboardView } from "../features/dashboard/DashboardView";
 import { HistoryView } from "../features/history/HistoryView";
@@ -139,7 +140,8 @@ export function App() {
                 ...current,
                 adminData: {
                   ...current.adminData,
-                  permissions: next.permissions
+                  permissions: next.permissions,
+                  permissionRequests: next.permissionRequests
                 }
               }
             : current
@@ -245,6 +247,18 @@ export function App() {
     }
 
     if (currentView === "dashboard") {
+      if (!data.user.canAccessApp) {
+        return data.user.email ? (
+          <PermissionRequestView
+            email={data.user.email}
+            request={data.permissionRequest}
+            onSave={(payload) => mutate((client) => client.savePermissionRequest(payload))}
+          />
+        ) : (
+          <EmptyState>Google 로그인 후 권한을 요청할 수 있습니다.</EmptyState>
+        );
+      }
+
       return (
         <DashboardView
           cards={data.dashboardCards}
@@ -303,8 +317,10 @@ export function App() {
       return (
         <PermissionsView
           permissions={data.adminData.permissions}
+          permissionRequests={data.adminData.permissionRequests}
           referenceData={data.appData.referenceData}
           onSave={(payload) => mutate((client) => client.saveUserPermission(payload))}
+          onResolve={(payload) => mutate((client) => client.resolvePermissionRequest(payload))}
         />
       );
     }

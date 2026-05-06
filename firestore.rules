@@ -179,6 +179,64 @@ service cloud.firestore {
         && isString(data.note);
     }
 
+    function validPermissionRequest(data, email) {
+      return data.keys().hasOnly([
+          'email',
+          'requestedRole',
+          'reason',
+          'status',
+          'reviewedAt',
+          'reviewedByEmail',
+          'adminNote',
+          'createdAt',
+          'createdByEmail',
+          'updatedAt',
+          'updatedByEmail'
+        ])
+        && data.email == email
+        && data.requestedRole in ['관리자', '운영자', '조회자']
+        && data.status in ['대기', '승인', '거절']
+        && isString(data.reason)
+        && isTimestampOrNull(data.reviewedAt)
+        && isString(data.reviewedByEmail)
+        && isString(data.adminNote);
+    }
+
+    function validPermissionRequestUserCreate(data, email) {
+      return validPermissionRequest(data, email)
+        && validAuditCreate(data)
+        && data.status == '대기'
+        && data.reviewedAt == null
+        && data.reviewedByEmail == ''
+        && data.adminNote == ''
+        && data.createdByEmail == email
+        && data.updatedByEmail == email;
+    }
+
+    function validPermissionRequestUserUpdate(data, email) {
+      return validPermissionRequest(data, email)
+        && validAuditUpdate(data)
+        && resource.data.status != '승인'
+        && data.status == '대기'
+        && data.reviewedAt == null
+        && data.reviewedByEmail == ''
+        && data.adminNote == ''
+        && data.updatedByEmail == email;
+    }
+
+    function validPermissionRequestAdminUpdate(data, email) {
+      return validPermissionRequest(data, email)
+        && validAuditUpdate(data)
+        && resource.data.status == '대기'
+        && data.email == resource.data.email
+        && data.requestedRole == resource.data.requestedRole
+        && data.reason == resource.data.reason
+        && data.status in ['승인', '거절']
+        && isTimestamp(data.reviewedAt)
+        && data.reviewedByEmail == request.auth.token.email
+        && data.updatedByEmail == request.auth.token.email;
+    }
+
     function validSetting(data) {
       return data.keys().hasOnly(['key', 'value', 'description', 'updatedAt', 'updatedByEmail'])
         && data.key in ['만료예정기준일수', '타임존']
@@ -220,6 +278,20 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isAdmin() && validPermission(request.resource.data, email) && validAuditCreate(request.resource.data);
       allow update: if isAdmin() && validPermission(request.resource.data, email) && validAuditUpdate(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /permissionRequests/{email} {
+      allow get: if signedIn() && (isAdmin() || email == request.auth.token.email);
+      allow list: if isAdmin();
+      allow create: if signedIn()
+        && email == request.auth.token.email
+        && validPermissionRequestUserCreate(request.resource.data, email);
+      allow update: if signedIn()
+        && (
+          (email == request.auth.token.email && validPermissionRequestUserUpdate(request.resource.data, email))
+          || (isAdmin() && validPermissionRequestAdminUpdate(request.resource.data, email))
+        );
       allow delete: if false;
     }
 

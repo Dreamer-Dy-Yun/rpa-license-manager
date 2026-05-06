@@ -8,6 +8,7 @@
 - 오류: Firestore SDK 오류 또는 프론트 `ApiError`
 - 성공 응답: 함수별 데이터 반환
 - `bootstrapApp`은 사용자, 메뉴, 빈 화면 데이터만 반환한다. 대량 컬렉션은 읽지 않는다.
+- 권한 없는 로그인 사용자는 `bootstrapApp` 응답의 `permissionRequest`로 본인 요청 상태만 확인한다.
 - 화면 데이터는 현재 화면 진입 시 섹션 로드 메서드로 가져온다.
 - mutation 성공 응답: 최신 최소 `BootstrapData` 반환. 현재 화면 데이터는 이후 섹션 로드로 갱신한다.
 - 일시 필드: `createdAt`, `updatedAt`, `eventAt`, `currentIssuedAt`은 Firestore `timestamp` 또는 명시적 `null`을 사용한다.
@@ -24,8 +25,10 @@
 | `loadHistoryData` | required | 관리자, 운영자, 조회자 | none | `HistorySectionData` |
 | `loadContactData` | required | 관리자, 운영자, 조회자 | none | `ContactSectionData` |
 | `loadSolutionsAdminData` | required | 관리자 | none | `SolutionsAdminSectionData` |
-| `loadPermissionsAdminData` | required | 관리자 | none | `PermissionsAdminSectionData` |
+| `loadPermissionsAdminData` | required | 관리자 | none | `PermissionsAdminSectionData` including `permissionRequests` |
 | `loadSettingsAdminData` | required | 관리자 | none | `SettingsAdminSectionData` |
+| `savePermissionRequest` | required | any signed-in user | `SavePermissionRequestPayload` | `BootstrapData` |
+| `resolvePermissionRequest` | required | 관리자 | `ResolvePermissionRequestPayload` | `BootstrapData` |
 | `saveSolution` | required | 관리자 | `SaveSolutionPayload` | `BootstrapData` |
 | `deleteSolution` | required | 관리자 | `{ solutionName }` | `BootstrapData` |
 | `saveUserPermission` | required | 관리자 | `SaveUserPermissionPayload` | `BootstrapData` |

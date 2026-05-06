@@ -564,6 +564,12 @@ button:disabled {
   font-weight: 700;
 }
 
+.muted-text {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .form-actions,
 .filter-actions {
   display: flex;

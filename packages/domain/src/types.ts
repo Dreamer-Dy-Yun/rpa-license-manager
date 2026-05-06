@@ -4,11 +4,13 @@ import type {
   LICENSE_CLASSIFICATIONS,
   LICENSE_ROLES,
   LICENSE_STATUS,
+  PERMISSION_REQUEST_STATUS,
   ROLES,
   SOURCE_TYPES
 } from "./constants.js";
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
+export type PermissionRequestStatus = (typeof PERMISSION_REQUEST_STATUS)[keyof typeof PERMISSION_REQUEST_STATUS];
 export type LicenseStatus = (typeof LICENSE_STATUS)[keyof typeof LICENSE_STATUS];
 export type ComputedLicenseStatus = LicenseStatus | "만료";
 export type LicenseClassification = (typeof LICENSE_CLASSIFICATIONS)[number];
@@ -106,6 +108,16 @@ export interface UserPermissionRecord extends AuditFields {
   note: string;
 }
 
+export interface PermissionRequestRecord extends AuditFields {
+  email: string;
+  requestedRole: Exclude<Role, typeof ROLES.NONE>;
+  reason: string;
+  status: PermissionRequestStatus;
+  reviewedAt: DateTimeValue | null;
+  reviewedByEmail: string;
+  adminNote: string;
+}
+
 export interface SystemSettingRecord {
   key: string;
   value: string;
@@ -143,12 +155,14 @@ export interface AppData {
 export interface AdminData {
   solutions: SolutionRecord[];
   permissions: UserPermissionRecord[];
+  permissionRequests: PermissionRequestRecord[];
   settings: SystemSettingRecord[];
 }
 
 export interface BootstrapData {
   appName: string;
   user: UserContext;
+  permissionRequest: PermissionRequestRecord | null;
   dashboardCards: DashboardCard[];
   menu: MenuItem[];
   appData: AppData;
@@ -182,6 +196,7 @@ export interface SolutionsAdminSectionData {
 
 export interface PermissionsAdminSectionData {
   permissions: UserPermissionRecord[];
+  permissionRequests: PermissionRequestRecord[];
 }
 
 export interface SettingsAdminSectionData {
@@ -201,6 +216,17 @@ export interface DeleteSolutionPayload {
 export interface SaveUserPermissionPayload {
   email: string;
   role: Role;
+  note: string;
+}
+
+export interface SavePermissionRequestPayload {
+  requestedRole: Exclude<Role, typeof ROLES.NONE>;
+  reason: string;
+}
+
+export interface ResolvePermissionRequestPayload {
+  email: string;
+  status: typeof PERMISSION_REQUEST_STATUS.APPROVED | typeof PERMISSION_REQUEST_STATUS.REJECTED;
   note: string;
 }
 

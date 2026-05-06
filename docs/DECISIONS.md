@@ -71,3 +71,11 @@
 - Spark 전용 프론트 단독 구조에서는 Firebase Console의 정확한 현재 전체 사용량을 앱에서 직접 조회하지 않는다.
 - 시스템 설정 화면에는 사용량 카드 대신 Firebase Console 사용량 링크만 표시한다.
 - Firestore 무료 quota와 리셋 기준은 Firebase Console과 공식 문서 기준으로 확인한다.
+
+## 2026-05-06 권한 요청 흐름
+
+- 서버 백엔드가 없으므로 권한 요청도 Firestore 직접 접근과 Security Rules로 처리한다.
+- `permissionRequests/{email}`은 사용자 본인 요청 상태와 관리자 처리 상태를 담는 컬렉션이다.
+- 권한 없는 로그인 사용자는 자기 요청만 생성, 조회, 재요청할 수 있다.
+- 관리자는 권한 관리 화면에서 요청을 승인 또는 거절한다.
+- 승인 시 `userPermissions/{email}`을 같은 트랜잭션에서 생성 또는 갱신한다.

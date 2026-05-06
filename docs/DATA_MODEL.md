@@ -47,6 +47,18 @@
 - Spark 무료 전용 구조에서는 최초 관리자 문서를 Firestore 콘솔에서 수동 생성한다
 - Audit fields: `createdAt`, `updatedAt`은 Firestore `timestamp`
 
+## Collection: `permissionRequests`
+
+권한 없는 로그인 사용자가 남기는 권한 요청.
+
+- Document id: 사용자 이메일 소문자
+- 사용자는 자기 요청 문서만 생성, 조회, 재요청할 수 있다
+- 관리자는 요청 목록을 조회하고 `대기` 요청을 `승인` 또는 `거절`로 처리한다
+- 승인 시 앱 API가 같은 트랜잭션에서 `userPermissions/{email}`을 생성 또는 갱신한다
+- Status: `대기`, `승인`, `거절`
+- `reviewedAt`: 처리 전 `null`, 처리 후 Firestore `timestamp`
+- Audit fields: `createdAt`, `updatedAt`은 Firestore `timestamp`
+
 ## Collection: `systemSettings`
 
 공통 설정.
