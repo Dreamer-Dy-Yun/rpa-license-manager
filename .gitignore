@@ -12,3 +12,4 @@ firestore-debug.log
 ui-debug.log
 npm-debug.log*
 .devserver.log
+.devserver.err.log
