@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { addDaysDateOnly, isDateOnly } from "@rpa-license/domain";
+import { CalendarDays } from "lucide-react";
 import { Button } from "./Button";
 
 function fieldClassName(className?: string): string {
@@ -28,6 +30,7 @@ export interface DateFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
 }
 
 export function DateField({ label, className, value, onValueChange, disabled, ...props }: DateFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const canStep = !disabled && isDateOnly(value);
 
   function step(days: number) {
@@ -37,15 +40,36 @@ export function DateField({ label, className, value, onValueChange, disabled, ..
     onValueChange(addDaysDateOnly(value, days));
   }
 
+  function openCalendar() {
+    const input = inputRef.current as (HTMLInputElement & { showPicker?: () => void }) | null;
+    if (!input || disabled) {
+      return;
+    }
+
+    input.focus();
+    if (typeof input.showPicker === "function") {
+      try {
+        input.showPicker();
+        return;
+      } catch {
+        // Fall through to the click fallback.
+      }
+    }
+    input.click();
+  }
+
   return (
     <label className={fieldClassName(className)}>
       <span>{label}</span>
-      <div className="date-control">
-        <input {...props} type="date" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)} />
+      <div className={["date-control", disabled ? "is-disabled" : ""].filter(Boolean).join(" ")}>
         <div className="date-stepper" aria-hidden={disabled}>
           <Button variant="stepper" disabled={!canStep} onClick={() => step(1)} title="하루 증가" aria-label={`${label} 하루 증가`}>▲</Button>
           <Button variant="stepper" disabled={!canStep} onClick={() => step(-1)} title="하루 감소" aria-label={`${label} 하루 감소`}>▼</Button>
         </div>
+        <input ref={inputRef} {...props} type="date" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)} />
+        <Button variant="icon" className="date-calendar-button" disabled={disabled} onClick={openCalendar} title="달력 열기" aria-label={`${label} 달력 열기`}>
+          <CalendarDays size={16} aria-hidden="true" />
+        </Button>
       </div>
     </label>
   );
