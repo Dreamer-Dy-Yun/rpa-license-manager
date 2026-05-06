@@ -382,9 +382,15 @@ button:disabled {
 
 .license-date-grid {
   display: grid;
-  grid-template-columns: minmax(180px, 1.2fr) minmax(110px, 0.7fr) minmax(110px, 0.7fr) minmax(180px, 1.2fr);
+  grid-template-columns: repeat(6, minmax(88px, 136px));
   gap: 16px;
   align-items: end;
+  justify-content: start;
+}
+
+.license-date-grid .field:first-child,
+.license-date-grid .field:last-child {
+  grid-column: span 2;
 }
 
 .field {
