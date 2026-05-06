@@ -15,6 +15,7 @@ import { Button } from "../../shared/ui/Button";
 import { DateField, InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 import {
   FilterPanel,
+  FilterActions,
   FormActions,
   FormMessage,
   FormPanel,
@@ -174,6 +175,8 @@ export function LicenseView({
               setFilters({
                 solutionName: String(data.get("solutionName") ?? ""),
                 status: String(data.get("status") ?? "") as LicenseFilters["status"],
+                classification: String(data.get("classification") ?? "") as LicenseFilters["classification"],
+                licenseRole: String(data.get("licenseRole") ?? "") as LicenseFilters["licenseRole"],
                 licenseNumber: String(data.get("licenseNumber") ?? ""),
                 customerName: String(data.get("customerName") ?? ""),
                 recipient: String(data.get("recipient") ?? ""),
@@ -183,14 +186,16 @@ export function LicenseView({
           >
             <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={filters.solutionName} includeAll />
             <SelectField name="status" label="상태" values={referenceData.licenseStatuses} defaultValue={filters.status} includeAll />
+            <SelectField name="classification" label="분류" values={referenceData.classifications} defaultValue={filters.classification} includeAll />
+            <SelectField name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={filters.licenseRole} includeAll />
             <InputField name="licenseNumber" label="라이선스 번호" />
             <InputField name="customerName" label="고객사/기관명" />
             <InputField name="recipient" label="수령자" />
             <SelectField name="expirationFlag" label="만료 구분" values={["만료", "만료예정"]} defaultValue={filters.expirationFlag} includeAll />
-            <FormActions>
+            <FilterActions>
               <Button variant="secondary" type="submit">필터 적용</Button>
               <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-            </FormActions>
+            </FilterActions>
           </FilterPanel>
 
           <TablePanel>

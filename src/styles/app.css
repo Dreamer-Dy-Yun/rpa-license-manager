@@ -368,10 +368,15 @@ button:disabled {
   border-color: #e1e7f0;
 }
 
-.form-grid,
-.filter-grid {
+.form-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
   gap: 16px;
 }
 
@@ -454,11 +459,17 @@ button:disabled {
   font-weight: 700;
 }
 
-.form-actions {
+.form-actions,
+.filter-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.filter-actions {
+  align-self: end;
+  min-height: 42px;
 }
 
 .tab-list {

@@ -11,6 +11,7 @@ import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 import {
   FilterPanel,
+  FilterActions,
   FormActions,
   FormMessage,
   FormPanel,
@@ -89,10 +90,10 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
         <InputField name="contactName" label="담당자명" />
         <InputField name="phoneNumber" label="전화번호" />
         <InputField name="email" label="이메일" />
-        <FormActions>
+        <FilterActions>
           <Button variant="secondary" type="submit">필터 적용</Button>
           <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-        </FormActions>
+        </FilterActions>
       </FilterPanel>
 
       <TablePanel>

@@ -20,6 +20,10 @@ export function FormActions({ className, ...props }: HTMLAttributes<HTMLDivEleme
   return <div {...props} className={classNames("form-actions", className)} />;
 }
 
+export function FilterActions({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div {...props} className={classNames("filter-actions", className)} />;
+}
+
 export function FormMessage({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
   return <p {...props} className={classNames("form-message", className)} />;
 }

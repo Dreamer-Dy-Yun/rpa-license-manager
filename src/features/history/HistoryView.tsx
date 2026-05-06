@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { filterHistory, formatDateTimeValue, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField } from "../../shared/ui/FormFields";
-import { FilterPanel, FormActions, Stack, TableEmpty, TablePanel } from "../../shared/ui/Surface";
+import { FilterActions, FilterPanel, Stack, TableEmpty, TablePanel } from "../../shared/ui/Surface";
 
 interface HistoryViewProps {
   history: HistoryRecord[];
@@ -33,10 +33,10 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
         <InputField name="licenseNumber" label="라이선스 번호" />
         <InputField name="operatorEmail" label="작업자" />
         <InputField name="recipient" label="수령자" />
-        <FormActions>
+        <FilterActions>
           <Button variant="secondary" type="submit">필터 적용</Button>
           <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-        </FormActions>
+        </FilterActions>
       </FilterPanel>
 
       <TablePanel>

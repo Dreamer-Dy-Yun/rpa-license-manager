@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LICENSE_STATUS } from "./constants.js";
 import { endDateFromDuration } from "./date.js";
-import { evaluateLicense, sortLicenses } from "./licenseRules.js";
+import { evaluateLicense, filterLicenses, sortLicenses } from "./licenseRules.js";
 import type { DateTimeValue, LicenseRecord } from "./types.js";
 
 function timestamp(value: string): DateTimeValue {
@@ -53,5 +53,12 @@ describe("license rules", () => {
   it("calculates inclusive end date from start date and duration", () => {
     expect(endDateFromDuration("2026-05-06", 1, 0)).toBe("2027-05-05");
     expect(endDateFromDuration("2026-01-31", 0, 1)).toBe("2026-02-27");
+  });
+
+  it("filters licenses by classification and role", () => {
+    const botPurchase = evaluateLicense({ ...base, licenseNumber: "A", classification: "구매", licenseRole: "Bot" }, 30, "2026-01-10");
+    const designerTest = evaluateLicense({ ...base, licenseNumber: "B", classification: "테스트", licenseRole: "Designer" }, 30, "2026-01-10");
+
+    expect(filterLicenses([botPurchase, designerTest], { classification: "테스트", licenseRole: "Designer" }).map((row) => row.licenseNumber)).toEqual(["B"]);
   });
 });
