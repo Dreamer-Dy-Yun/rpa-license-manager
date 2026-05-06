@@ -61,7 +61,7 @@ React 프론트엔드다. 화면은 API 계약을 호출하며, API 구현체가
 | `src/features/history` | 이력 조회 화면 |
 | `src/features/contacts` | 연락처 조회/관리 화면 |
 | `src/features/admin` | 솔루션, 권한, 시스템 설정 관리자 화면 |
-| `src/features/admin/FirebaseUsagePanel.tsx` | Firebase Spark quota, 리셋 시각, 콘솔 링크 표시 |
+| `src/features/admin/FirebaseUsagePanel.tsx` | Firebase 사용량 콘솔 링크 표시 |
 | `src/styles` | 전역 CSS |
 
 ## `docs`

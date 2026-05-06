@@ -65,8 +65,8 @@
 - 묶인 기간 영역 안에서 별도 6열 그리드를 사용한다. 시작일/종료일은 2칸, 년/개월은 1칸씩 차지한다.
 - 기간 영역은 넓은 화면에서도 입력란이 과하게 늘어나지 않도록 컬럼 최대 폭을 제한한다.
 
-## 2026-05-06 Firebase 사용량 표시
+## 2026-05-06 Firebase 사용량 확인
 
 - Spark 전용 프론트 단독 구조에서는 Firebase Console의 정확한 현재 전체 사용량을 앱에서 직접 조회하지 않는다.
-- 시스템 설정 화면에 Firestore Spark 무료 한도, 다음 일일 리셋 추정 시각, Firebase Console 사용량 링크를 표시한다.
-- Firestore 무료 quota와 리셋 기준은 Firebase 공식 문서 기준으로 관리한다.
+- 시스템 설정 화면에는 사용량 카드 대신 Firebase Console 사용량 링크만 표시한다.
+- Firestore 무료 quota와 리셋 기준은 Firebase Console과 공식 문서 기준으로 확인한다.
