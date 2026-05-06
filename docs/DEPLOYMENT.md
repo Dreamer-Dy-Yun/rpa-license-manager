@@ -18,8 +18,8 @@
 
 ## Pipelines
 
-- `ci.yml`: pull request와 push에서 타입 검사, 테스트, 빌드를 수행한다.
-- `firebase-deploy.yml`: `main` branch push 또는 수동 실행에서 Firebase Hosting, Firestore rules/indexes를 배포한다.
+- `ci.yml`: pull request와 push에서 의존성 설치, 타입 검사, 테스트, 빌드를 수행한다.
+- `firebase-deploy.yml`: `main` branch push 또는 수동 실행에서 의존성 설치 후 Firebase Hosting, Firestore rules/indexes를 배포한다.
 
 현재 Firebase project id는 `rpa-licence-manager`다. GitHub secret `FIREBASE_PROJECT_ID`도 같은 값으로 설정한다.
 
