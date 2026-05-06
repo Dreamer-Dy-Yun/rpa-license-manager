@@ -39,6 +39,8 @@ Firebase project id: `rpa-licence-manager`
 - 로그인은 Firebase Auth를 사용한다.
 - 데이터는 브라우저의 Firebase SDK가 Firestore에 직접 접근한다.
 - 권한과 데이터 쓰기 제한은 `firestore.rules`에서 강제한다.
+- 초기 로딩은 권한/메뉴만 읽고, 화면별 데이터는 진입 시 지연 로딩한다.
+- 라이선스 이력은 Firestore 읽기량 보호를 위해 최근 100건만 조회한다.
 
 첫 관리자 계정은 Firestore 콘솔에서 수동으로 `userPermissions/{email}` 문서를 생성한다. 자세한 절차는 [docs/SPARK_SETUP.md](./docs/SPARK_SETUP.md)를 본다.
 

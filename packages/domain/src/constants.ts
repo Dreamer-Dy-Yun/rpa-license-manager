@@ -1,5 +1,6 @@
 export const APP_NAME = "RPA 라이선스 관리";
 export const DEFAULT_PAGE_SIZE = 20;
+export const DEFAULT_HISTORY_LIMIT = 100;
 export const DEFAULT_EXPIRING_DAYS = 30;
 export const DEFAULT_TIME_ZONE = "Asia/Seoul";
 
@@ -50,4 +51,3 @@ export const MENU_ITEMS = {
   PERMISSIONS: "permissions",
   SETTINGS: "settings"
 } as const;
-

@@ -156,6 +156,38 @@ export interface BootstrapData {
   systemMessage?: string;
 }
 
+export interface DashboardSectionData {
+  dashboardCards: DashboardCard[];
+  referenceData: ReferenceData;
+}
+
+export interface LicenseSectionData {
+  licenses: LicenseView[];
+  referenceData: ReferenceData;
+}
+
+export interface HistorySectionData {
+  history: HistoryRecord[];
+  referenceData: ReferenceData;
+}
+
+export interface ContactSectionData {
+  contacts: ContactRecord[];
+  referenceData: ReferenceData;
+}
+
+export interface SolutionsAdminSectionData {
+  solutions: SolutionRecord[];
+}
+
+export interface PermissionsAdminSectionData {
+  permissions: UserPermissionRecord[];
+}
+
+export interface SettingsAdminSectionData {
+  settings: SystemSettingRecord[];
+}
+
 export interface SaveSolutionPayload {
   solutionName: string;
   manufacturerName: string;

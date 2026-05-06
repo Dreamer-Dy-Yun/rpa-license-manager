@@ -10,10 +10,26 @@ import { createAppApi } from "../shared/api/createAppApi";
 import type { AppApi } from "../shared/api/appApi";
 import { AppShell } from "./AppShell";
 
+type LoadSection = "dashboard" | "licenses" | "history" | "contacts" | "solutions" | "permissions" | "settings";
+type LoadedSections = Record<LoadSection, boolean>;
+
+function emptyLoadedSections(): LoadedSections {
+  return {
+    dashboard: false,
+    licenses: false,
+    history: false,
+    contacts: false,
+    solutions: false,
+    permissions: false,
+    settings: false
+  };
+}
+
 export function App() {
   const api = useMemo(() => createAppApi(), []);
   const auth = useAuthState();
   const [data, setData] = useState<BootstrapData | null>(null);
+  const [loadedSections, setLoadedSections] = useState<LoadedSections>(() => emptyLoadedSections());
   const [currentView, setCurrentView] = useState("dashboard");
   const [selectedSolution, setSelectedSolution] = useState<string>("");
   const [busy, setBusy] = useState(false);
@@ -23,9 +39,131 @@ export function App() {
     setBusy(true);
     try {
       setData(await api.bootstrapApp());
+      setLoadedSections(emptyLoadedSections());
       setError("");
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "초기 데이터를 불러오지 못했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  }, [api]);
+
+  const loadSection = useCallback(async (section: LoadSection) => {
+    setBusy(true);
+    try {
+      if (section === "dashboard") {
+        const next = await api.loadDashboardData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                dashboardCards: next.dashboardCards,
+                appData: {
+                  ...current.appData,
+                  referenceData: next.referenceData
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "licenses") {
+        const next = await api.loadLicenseData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                appData: {
+                  ...current.appData,
+                  licenses: next.licenses,
+                  referenceData: next.referenceData
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "history") {
+        const next = await api.loadHistoryData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                appData: {
+                  ...current.appData,
+                  history: next.history,
+                  referenceData: next.referenceData
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "contacts") {
+        const next = await api.loadContactData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                appData: {
+                  ...current.appData,
+                  contacts: next.contacts,
+                  referenceData: next.referenceData
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "solutions") {
+        const next = await api.loadSolutionsAdminData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                adminData: {
+                  ...current.adminData,
+                  solutions: next.solutions
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "permissions") {
+        const next = await api.loadPermissionsAdminData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                adminData: {
+                  ...current.adminData,
+                  permissions: next.permissions
+                }
+              }
+            : current
+        );
+      }
+
+      if (section === "settings") {
+        const next = await api.loadSettingsAdminData();
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                adminData: {
+                  ...current.adminData,
+                  settings: next.settings
+                }
+              }
+            : current
+        );
+      }
+
+      setLoadedSections((current) => ({ ...current, [section]: true }));
+      setError("");
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "화면 데이터를 불러오지 못했습니다.");
     } finally {
       setBusy(false);
     }
@@ -47,6 +185,15 @@ export function App() {
     }
   }, [currentView, data]);
 
+  useEffect(() => {
+    const section = viewToSection(currentView);
+    if (!data?.user.canAccessApp || !section || loadedSections[section]) {
+      return;
+    }
+
+    void loadSection(section);
+  }, [currentView, data?.user.canAccessApp, loadedSections, loadSection]);
+
   const role = data?.user.role ?? ROLES.NONE;
   const isAdmin = role === ROLES.ADMIN;
   const canEditLicense = role === ROLES.ADMIN || role === ROLES.OPERATOR;
@@ -55,6 +202,7 @@ export function App() {
     setBusy(true);
     try {
       setData(await action(api));
+      setLoadedSections(emptyLoadedSections());
       setError("");
     } catch (mutationError) {
       setError(mutationError instanceof Error ? mutationError.message : "요청 처리 중 오류가 발생했습니다.");
@@ -173,3 +321,18 @@ export function App() {
   }
 }
 
+function viewToSection(view: string): LoadSection | null {
+  if (
+    view === "dashboard" ||
+    view === "licenses" ||
+    view === "history" ||
+    view === "contacts" ||
+    view === "solutions" ||
+    view === "permissions" ||
+    view === "settings"
+  ) {
+    return view;
+  }
+
+  return null;
+}

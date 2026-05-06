@@ -28,6 +28,7 @@
 - Existing records are never updated or deleted by app flows
 - `sourceType` marks `웹앱` or future sources
 - `eventAt`: Firestore `timestamp`
+- App query: 최근 100건만 `eventAt desc` 기준으로 조회한다
 
 ## Collection: `contacts`
 

@@ -23,3 +23,9 @@
 - Cloud Functions와 관련된 Cloud Run, Cloud Build, Artifact Registry 배포 흐름을 제거한다.
 - `React -> Firestore 직접 접근 -> Firestore Security Rules` 구조로 전환한다.
 - 첫 관리자 자동 생성은 서버 없이 안전하게 처리하기 어렵기 때문에 수동 seed로 결정한다.
+
+## 2026-05-06 Spark 읽기량 최적화
+
+- Spark 무료 읽기 한도 보호를 위해 `bootstrapApp`은 대량 컬렉션을 읽지 않는다.
+- 화면별 데이터는 화면 진입 시 별도 섹션 API로 지연 로딩한다.
+- 라이선스 이력은 누적 데이터이므로 기본 조회를 최근 100건으로 제한한다.

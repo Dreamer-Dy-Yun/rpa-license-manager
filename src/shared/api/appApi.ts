@@ -1,19 +1,33 @@
 import type {
   BootstrapData,
+  ContactSectionData,
   DeleteContactPayload,
   DeleteLicensePayload,
   DeleteSolutionPayload,
+  DashboardSectionData,
+  HistorySectionData,
   IssueLicensePayload,
+  LicenseSectionData,
+  PermissionsAdminSectionData,
   ReturnLicensePayload,
   SaveContactPayload,
   SaveLicensePayload,
   SaveSolutionPayload,
   SaveUserPermissionPayload,
+  SettingsAdminSectionData,
+  SolutionsAdminSectionData,
   UpdateSystemSettingPayload
 } from "@rpa-license/domain";
 
 export interface AppApi {
   bootstrapApp: () => Promise<BootstrapData>;
+  loadDashboardData: () => Promise<DashboardSectionData>;
+  loadLicenseData: () => Promise<LicenseSectionData>;
+  loadHistoryData: () => Promise<HistorySectionData>;
+  loadContactData: () => Promise<ContactSectionData>;
+  loadSolutionsAdminData: () => Promise<SolutionsAdminSectionData>;
+  loadPermissionsAdminData: () => Promise<PermissionsAdminSectionData>;
+  loadSettingsAdminData: () => Promise<SettingsAdminSectionData>;
   saveSolution: (payload: SaveSolutionPayload) => Promise<BootstrapData>;
   deleteSolution: (payload: DeleteSolutionPayload) => Promise<BootstrapData>;
   saveUserPermission: (payload: SaveUserPermissionPayload) => Promise<BootstrapData>;
@@ -32,4 +46,3 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
-

@@ -1,14 +1,15 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
+  query,
   runTransaction,
   setDoc,
   Timestamp,
-  type DocumentData,
   type Firestore
 } from "firebase/firestore";
 import {
@@ -16,6 +17,7 @@ import {
   COLLECTIONS,
   COMPUTED_LICENSE_STATUS,
   DEFAULT_EXPIRING_DAYS,
+  DEFAULT_HISTORY_LIMIT,
   DEFAULT_TIME_ZONE,
   DEPLOYMENT_TYPES,
   HISTORY_EVENT_TYPES,
@@ -30,21 +32,25 @@ import {
   compareDateTimeAsc,
   emptyReferenceData,
   evaluateLicense,
-  sortHistory,
   sortLicenses,
   validateLicensePayload,
   type BootstrapData,
+  type ContactSectionData,
   type ContactRecord,
   type DashboardCard,
+  type DashboardSectionData,
   type DeleteContactPayload,
   type DeleteLicensePayload,
   type DeleteSolutionPayload,
+  type HistorySectionData,
   type HistoryEventType,
   type HistoryRecord,
   type IssueLicensePayload,
+  type LicenseSectionData,
   type LicenseRecord,
   type LicenseView,
   type MenuItem,
+  type PermissionsAdminSectionData,
   type ReferenceData,
   type ReturnLicensePayload,
   type Role,
@@ -53,6 +59,8 @@ import {
   type SaveSolutionPayload,
   type SaveUserPermissionPayload,
   type SolutionRecord,
+  type SolutionsAdminSectionData,
+  type SettingsAdminSectionData,
   type StoredSolutionRecord,
   type SystemSettingRecord,
   type UpdateSystemSettingPayload,
@@ -65,6 +73,13 @@ import { ApiError, type AppApi } from "./appApi";
 
 export const firestoreAppApi: AppApi = {
   bootstrapApp,
+  loadDashboardData,
+  loadLicenseData,
+  loadHistoryData,
+  loadContactData,
+  loadSolutionsAdminData,
+  loadPermissionsAdminData,
+  loadSettingsAdminData,
   saveSolution: (payload) => mutate([ROLES.ADMIN], async ({ db, actor }) => saveSolutionRecord(db, actor, payload)),
   deleteSolution: (payload) => mutate([ROLES.ADMIN], async ({ db }) => deleteSolutionRecord(db, payload)),
   saveUserPermission: (payload) => mutate([ROLES.ADMIN], async ({ db, actor }) => saveUserPermissionRecord(db, actor, payload)),
@@ -86,32 +101,90 @@ async function bootstrapApp(): Promise<BootstrapData> {
       return emptyBootstrap(user, user.email ? PUBLIC_PERMISSION_MESSAGE : "로그인이 필요합니다.");
     }
 
-    const [solutions, settings, permissions, contacts, history] = await Promise.all([
-      listSolutions(db),
-      listSettings(db),
-      user.role === ROLES.ADMIN ? listPermissions(db) : Promise.resolve([]),
-      listContacts(db),
-      listHistory(db)
+    return emptyBootstrap(user);
+  } catch (error) {
+    throw normalizeApiError(error);
+  }
+}
+
+async function loadDashboardData(): Promise<DashboardSectionData> {
+  return read([ROLES.ADMIN, ROLES.OPERATOR, ROLES.VIEWER], async ({ db }) => {
+    const [solutions, settings] = await Promise.all([listStoredSolutions(db), listSettings(db)]);
+    const licenses = await listLicenses(db, getExpiringDays(settings));
+    return {
+      dashboardCards: buildDashboardCards(solutions, licenses),
+      referenceData: buildReferenceData(solutions)
+    };
+  });
+}
+
+async function loadLicenseData(): Promise<LicenseSectionData> {
+  return read([ROLES.ADMIN, ROLES.OPERATOR, ROLES.VIEWER], async ({ db }) => {
+    const [solutions, settings] = await Promise.all([
+      listStoredSolutions(db),
+      listSettings(db)
     ]);
     const licenses = await listLicenses(db, getExpiringDays(settings));
 
     return {
-      appName: APP_NAME,
-      user,
-      dashboardCards: buildDashboardCards(solutions, licenses),
-      menu: buildMenuByRole(user.role),
-      appData: {
-        licenses,
-        history,
-        contacts,
-        referenceData: buildReferenceData(solutions)
-      },
-      adminData: {
-        solutions,
-        permissions,
-        settings
-      }
+      licenses,
+      referenceData: buildReferenceData(solutions)
     };
+  });
+}
+
+async function loadHistoryData(): Promise<HistorySectionData> {
+  return read([ROLES.ADMIN, ROLES.OPERATOR, ROLES.VIEWER], async ({ db }) => {
+    const [solutions, history] = await Promise.all([listStoredSolutions(db), listHistory(db, DEFAULT_HISTORY_LIMIT)]);
+    return {
+      history,
+      referenceData: buildReferenceData(solutions)
+    };
+  });
+}
+
+async function loadContactData(): Promise<ContactSectionData> {
+  return read([ROLES.ADMIN, ROLES.OPERATOR, ROLES.VIEWER], async ({ db }) => {
+    const [solutions, contacts] = await Promise.all([listStoredSolutions(db), listContacts(db)]);
+    return {
+      contacts,
+      referenceData: buildReferenceData(solutions)
+    };
+  });
+}
+
+async function loadSolutionsAdminData(): Promise<SolutionsAdminSectionData> {
+  return read([ROLES.ADMIN], async ({ db }) => ({
+    solutions: await listSolutions(db)
+  }));
+}
+
+async function loadPermissionsAdminData(): Promise<PermissionsAdminSectionData> {
+  return read([ROLES.ADMIN], async ({ db }) => ({
+    permissions: await listPermissions(db)
+  }));
+}
+
+async function loadSettingsAdminData(): Promise<SettingsAdminSectionData> {
+  return read([ROLES.ADMIN], async ({ db }) => ({
+    settings: await listSettings(db)
+  }));
+}
+
+async function read<T>(
+  allowedRoles: Role[],
+  action: (context: { db: Firestore; actor: string; role: Role }) => Promise<T>
+): Promise<T> {
+  try {
+    const { db } = getFirebaseClient();
+    const actor = getActorEmail();
+    const role = await getRole(db, actor);
+
+    if (!allowedRoles.includes(role)) {
+      throw new ApiError("권한이 없습니다.");
+    }
+
+    return await action({ db, actor, role });
   } catch (error) {
     throw normalizeApiError(error);
   }
@@ -185,9 +258,14 @@ async function listCollection<T>(db: Firestore, name: string): Promise<T[]> {
   return snapshot.docs.map((row) => row.data() as T);
 }
 
+async function listStoredSolutions(db: Firestore): Promise<StoredSolutionRecord[]> {
+  const rows = await listCollection<StoredSolutionRecord>(db, COLLECTIONS.SOLUTIONS);
+  return rows.sort((left, right) => compareDateTimeAsc(left.createdAt, right.createdAt));
+}
+
 async function listSolutions(db: Firestore): Promise<SolutionRecord[]> {
   const [solutions, licenses, contacts] = await Promise.all([
-    listCollection<StoredSolutionRecord>(db, COLLECTIONS.SOLUTIONS),
+    listStoredSolutions(db),
     listCollection<LicenseRecord>(db, COLLECTIONS.LICENSES),
     listCollection<ContactRecord>(db, COLLECTIONS.CONTACTS)
   ]);
@@ -217,14 +295,12 @@ async function listContacts(db: Firestore): Promise<ContactRecord[]> {
   });
 }
 
-async function listHistory(db: Firestore): Promise<HistoryRecord[]> {
-  const snapshot = await getDocs(collection(db, COLLECTIONS.LICENSE_HISTORY));
-  return sortHistory(
-    snapshot.docs.map((row) => ({
-      id: row.id,
-      ...(row.data() as Omit<HistoryRecord, "id">)
-    }))
-  );
+async function listHistory(db: Firestore, maxRows: number): Promise<HistoryRecord[]> {
+  const snapshot = await getDocs(query(collection(db, COLLECTIONS.LICENSE_HISTORY), orderBy("eventAt", "desc"), limit(maxRows)));
+  return snapshot.docs.map((row) => ({
+    id: row.id,
+    ...(row.data() as Omit<HistoryRecord, "id">)
+  }));
 }
 
 async function listPermissions(db: Firestore): Promise<UserPermissionRecord[]> {
@@ -262,7 +338,7 @@ function getExpiringDays(settings: SystemSettingRecord[]): number {
   return Number.isInteger(value) && value > 0 ? value : DEFAULT_EXPIRING_DAYS;
 }
 
-function buildDashboardCards(solutions: SolutionRecord[], licenses: LicenseView[]): DashboardCard[] {
+function buildDashboardCards(solutions: StoredSolutionRecord[], licenses: LicenseView[]): DashboardCard[] {
   return solutions.map((solution) => {
     const related = licenses.filter((license) => license.solutionName === solution.solutionName);
     const counts = related.reduce(
@@ -292,7 +368,7 @@ function buildDashboardCards(solutions: SolutionRecord[], licenses: LicenseView[
   });
 }
 
-function buildReferenceData(solutions: SolutionRecord[]): ReferenceData {
+function buildReferenceData(solutions: Array<Pick<StoredSolutionRecord, "solutionName">>): ReferenceData {
   return {
     ...emptyReferenceData(),
     solutions: solutions.map((solution) => solution.solutionName),

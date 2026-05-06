@@ -50,6 +50,25 @@ async function rejectMutation(): Promise<BootstrapData> {
 
 export const contractMockApi: AppApi = {
   bootstrapApp: async () => emptyBootstrap(),
+  loadDashboardData: async () => ({
+    dashboardCards: [],
+    referenceData: emptyReferenceData()
+  }),
+  loadLicenseData: async () => ({
+    licenses: [],
+    referenceData: emptyReferenceData()
+  }),
+  loadHistoryData: async () => ({
+    history: [],
+    referenceData: emptyReferenceData()
+  }),
+  loadContactData: async () => ({
+    contacts: [],
+    referenceData: emptyReferenceData()
+  }),
+  loadSolutionsAdminData: async () => ({ solutions: [] }),
+  loadPermissionsAdminData: async () => ({ permissions: [] }),
+  loadSettingsAdminData: async () => ({ settings: [] }),
   saveSolution: rejectMutation,
   deleteSolution: rejectMutation,
   saveUserPermission: rejectMutation,
@@ -61,4 +80,3 @@ export const contractMockApi: AppApi = {
   saveContact: rejectMutation,
   deleteContact: rejectMutation
 };
-

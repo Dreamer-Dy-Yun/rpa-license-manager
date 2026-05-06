@@ -6,6 +6,7 @@
 
 - 화면 책임은 `src/features/*`에 둔다.
 - API 호출 계약은 `src/shared/api`에 둔다.
+- 화면별 데이터 로딩 책임은 `src/app/App.tsx`가 `AppApi`의 섹션 로드 메서드를 호출해 조합한다.
 - Firebase 클라이언트 초기화는 `src/shared/firebase`에만 둔다.
 - 업무 값, 타입, 계산 규칙은 `packages/domain`에 둔다.
 - Firestore 접근은 `src/shared/api/firestoreAppApi.ts`에 둔다.
@@ -46,9 +47,9 @@ React 프론트엔드다. 화면은 API 계약을 호출하며, API 구현체가
 | Path | Role |
 |---|---|
 | `src/main.tsx` | React 앱 진입점 |
-| `src/app/App.tsx` | 앱 상태 조합과 화면 라우팅 |
+| `src/app/App.tsx` | 앱 상태 조합, 화면 라우팅, 화면별 지연 데이터 로딩 |
 | `src/app/AppShell.tsx` | 공통 레이아웃, 메뉴, 로그인 영역 |
-| `src/shared/api/*` | Firestore 직접 접근 API 계약, Spark 대체 구현체 |
+| `src/shared/api/*` | Firestore 직접 접근 API 계약, 화면별 데이터 로드, Spark 대체 구현체 |
 | `src/shared/firebase/*` | Firebase Web SDK 초기화와 Auth/Firestore 연결 |
 | `src/shared/lib/firestoreIds.ts` | Firestore 문서 ID 정규화 규칙 |
 | `src/features/auth` | 로그인 상태 표시/조작 |
