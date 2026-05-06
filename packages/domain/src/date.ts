@@ -1,4 +1,5 @@
 import { DEFAULT_TIME_ZONE } from "./constants.js";
+import type { DateTimeValue } from "./types.js";
 
 function pad(value: number): string {
   return String(value).padStart(2, "0");
@@ -27,6 +28,25 @@ function getParts(date: Date, timeZone = DEFAULT_TIME_ZONE): Record<string, stri
 export function nowDateTimeString(date = new Date(), timeZone = DEFAULT_TIME_ZONE): string {
   const parts = getParts(date, timeZone);
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+export function dateTimeMillis(value: DateTimeValue | null | undefined): number {
+  if (!value) {
+    return 0;
+  }
+  return value.seconds * 1000 + Math.floor(value.nanoseconds / 1_000_000);
+}
+
+export function compareDateTimeAsc(left: DateTimeValue | null | undefined, right: DateTimeValue | null | undefined): number {
+  return dateTimeMillis(left) - dateTimeMillis(right);
+}
+
+export function compareDateTimeDesc(left: DateTimeValue | null | undefined, right: DateTimeValue | null | undefined): number {
+  return dateTimeMillis(right) - dateTimeMillis(left);
+}
+
+export function formatDateTimeValue(value: DateTimeValue | null | undefined, timeZone = DEFAULT_TIME_ZONE): string {
+  return value ? nowDateTimeString(value.toDate(), timeZone) : "";
 }
 
 export function todayDateOnly(date = new Date(), timeZone = DEFAULT_TIME_ZONE): string {

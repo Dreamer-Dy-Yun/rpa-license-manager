@@ -31,16 +31,17 @@
 | `email` | string | `dreamer.dy.yun@gmail.com` |
 | `role` | string | `관리자` |
 | `note` | string | `최초 관리자` |
-| `createdAt` | string | `2026-05-06 00:00:00` |
+| `createdAt` | timestamp | 현재 날짜/시간 |
 | `createdByEmail` | string | `manual` |
-| `updatedAt` | string | `2026-05-06 00:00:00` |
+| `updatedAt` | timestamp | 현재 날짜/시간 |
 | `updatedByEmail` | string | `manual` |
 
 이 문서가 있어야 앱에서 관리자 메뉴가 열린다.
+
+Firestore 콘솔에서 `createdAt`, `updatedAt`은 문자열이 아니라 `timestamp` 타입으로 선택한다. 날짜만 의미하는 `startDate`, `endDate`는 `yyyy-MM-dd` 문자열로 저장한다.
 
 ## 보안 기준
 
 - 프론트 버튼 숨김은 보안이 아니다.
 - 실제 권한 제한은 `firestore.rules`가 담당한다.
 - 권한 없는 사용자는 자신의 권한 문서 확인 외에는 앱 데이터를 읽을 수 없다.
-

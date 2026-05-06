@@ -6,7 +6,7 @@ import {
   LICENSE_ROLES,
   LICENSE_STATUS
 } from "./constants.js";
-import { addDaysDateOnly, compareDateOnly, isDateOnly, todayDateOnly } from "./date.js";
+import { addDaysDateOnly, compareDateOnly, compareDateTimeDesc, isDateOnly, todayDateOnly } from "./date.js";
 import type {
   ComputedLicenseStatus,
   ContactFilters,
@@ -154,7 +154,7 @@ export function buildLicenseChangeDetails(before: LicenseRecord, after: LicenseR
 }
 
 export function sortHistory(rows: HistoryRecord[]): HistoryRecord[] {
-  return [...rows].sort((left, right) => right.eventAt.localeCompare(left.eventAt));
+  return [...rows].sort((left, right) => compareDateTimeDesc(left.eventAt, right.eventAt));
 }
 
 export function emptyReferenceData() {

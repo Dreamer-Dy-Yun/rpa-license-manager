@@ -9,6 +9,7 @@ import type {
   UpdateSystemSettingPayload,
   UserPermissionRecord
 } from "@rpa-license/domain";
+import { formatDateTimeValue } from "@rpa-license/domain";
 
 interface SolutionsViewProps {
   solutions: SolutionRecord[];
@@ -205,7 +206,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                 <td>{row.key}</td>
                 <td>{row.value}</td>
                 <td>{row.description}</td>
-                <td>{row.updatedAt}</td>
+                <td>{formatDateTimeValue(row.updatedAt) || "-"}</td>
               </tr>
             ))}
           </tbody>
@@ -243,4 +244,3 @@ async function removeSolution(solutionName: string, onDelete: SolutionsViewProps
   if (!window.confirm("이 솔루션을 삭제할까요? 연결된 데이터가 있으면 삭제되지 않습니다.")) return;
   await onDelete({ solutionName });
 }
-

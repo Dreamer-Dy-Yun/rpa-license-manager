@@ -8,6 +8,8 @@
 - 오류: Firestore SDK 오류 또는 프론트 `ApiError`
 - 성공 응답: 함수별 데이터 반환
 - mutation 성공 응답: 최신 `BootstrapData` 반환
+- 일시 필드: `createdAt`, `updatedAt`, `eventAt`, `currentIssuedAt`은 Firestore `timestamp` 또는 명시적 `null`을 사용한다.
+- 날짜 필드: 라이선스 `startDate`, `endDate`는 날짜 전용 `yyyy-MM-dd` 문자열을 사용한다.
 
 ## AppApi Methods
 

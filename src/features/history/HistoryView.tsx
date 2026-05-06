@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { filterHistory, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
+import { filterHistory, formatDateTimeValue, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
 
 interface HistoryViewProps {
   history: HistoryRecord[];
@@ -53,7 +53,7 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.id}>
-                <td>{row.eventAt}</td>
+                <td>{formatDateTimeValue(row.eventAt)}</td>
                 <td>{row.eventType}</td>
                 <td>{row.licenseNumber}</td>
                 <td>{row.solutionName}</td>
@@ -97,4 +97,3 @@ function Select({ name, label, values, includeAll }: { name: string; label: stri
     </label>
   );
 }
-

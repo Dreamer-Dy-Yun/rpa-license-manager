@@ -7,6 +7,7 @@ import {
   getDocs,
   runTransaction,
   setDoc,
+  Timestamp,
   type DocumentData,
   type Firestore
 } from "firebase/firestore";
@@ -26,9 +27,9 @@ import {
   ROLES,
   SETTING_KEYS,
   buildLicenseChangeDetails,
+  compareDateTimeAsc,
   emptyReferenceData,
   evaluateLicense,
-  nowDateTimeString,
   sortHistory,
   sortLicenses,
   validateLicensePayload,
@@ -197,7 +198,7 @@ async function listSolutions(db: Firestore): Promise<SolutionRecord[]> {
       connectedLicenseCount: licenses.filter((license) => license.solutionName === solution.solutionName).length,
       connectedContactCount: contacts.filter((contact) => contact.solutionName === solution.solutionName).length
     }))
-    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+    .sort((left, right) => compareDateTimeAsc(left.createdAt, right.createdAt));
 }
 
 async function listLicenses(db: Firestore, expiringDays: number): Promise<LicenseView[]> {
@@ -243,14 +244,14 @@ function defaultSettings(): SystemSettingRecord[] {
       key: SETTING_KEYS.EXPIRING_DAYS,
       value: String(DEFAULT_EXPIRING_DAYS),
       description: "종료일 기준 몇 일 이내를 만료예정으로 볼지",
-      updatedAt: "",
+      updatedAt: null,
       updatedByEmail: ""
     },
     {
       key: SETTING_KEYS.TIME_ZONE,
       value: DEFAULT_TIME_ZONE,
       description: "일시 표시 및 계산 기준 타임존",
-      updatedAt: "",
+      updatedAt: null,
       updatedByEmail: ""
     }
   ];
@@ -358,7 +359,7 @@ async function saveSolutionRecord(db: Firestore, actor: string, payload: SaveSol
 
   const ref = doc(db, COLLECTIONS.SOLUTIONS, toDocId(solutionName));
   const snapshot = await getDoc(ref);
-  const now = nowDateTimeString();
+  const now = Timestamp.now();
   const current = snapshot.data() as StoredSolutionRecord | undefined;
 
   await setDoc(ref, {
@@ -400,7 +401,7 @@ async function saveUserPermissionRecord(db: Firestore, actor: string, payload: S
   const ref = doc(db, COLLECTIONS.USER_PERMISSIONS, permissionDocId(email));
   const snapshot = await getDoc(ref);
   const current = snapshot.data() as UserPermissionRecord | undefined;
-  const now = nowDateTimeString();
+  const now = Timestamp.now();
 
   await setDoc(ref, {
     email,
@@ -434,7 +435,7 @@ async function updateSystemSettingRecord(db: Firestore, actor: string, payload: 
     key,
     value,
     description,
-    updatedAt: nowDateTimeString(),
+    updatedAt: Timestamp.now(),
     updatedByEmail: actor
   } satisfies SystemSettingRecord);
 }
@@ -448,7 +449,7 @@ async function saveLicenseRecord(db: Firestore, actor: string, payload: SaveLice
 
   await runTransaction(db, async (transaction) => {
     const snapshot = await transaction.get(licenseRef);
-    const now = nowDateTimeString();
+    const now = Timestamp.now();
 
     if (!snapshot.exists()) {
       const row: LicenseRecord = {
@@ -456,7 +457,7 @@ async function saveLicenseRecord(db: Firestore, actor: string, payload: SaveLice
         storedStatus: LICENSE_STATUS.AVAILABLE,
         currentIssuerEmail: "",
         currentRecipient: "",
-        currentIssuedAt: "",
+        currentIssuedAt: null,
         createdAt: now,
         createdByEmail: actor,
         updatedAt: now,
@@ -508,7 +509,7 @@ async function issueLicenseRecord(db: Firestore, actor: string, payload: IssueLi
     if (evaluated.isExpired) throw new Error("만료된 라이선스는 불출할 수 없습니다.");
     if (row.storedStatus === LICENSE_STATUS.IN_USE) throw new Error("이미 사용중인 라이선스입니다.");
 
-    const now = nowDateTimeString();
+    const now = Timestamp.now();
     const updated: LicenseRecord = {
       ...row,
       storedStatus: LICENSE_STATUS.IN_USE,
@@ -535,13 +536,13 @@ async function returnLicenseRecord(db: Firestore, actor: string, payload: Return
     const row = snapshot.data() as LicenseRecord;
     if (row.storedStatus !== LICENSE_STATUS.IN_USE) throw new Error("사용중인 라이선스만 회수할 수 있습니다.");
 
-    const now = nowDateTimeString();
+    const now = Timestamp.now();
     const updated: LicenseRecord = {
       ...row,
       storedStatus: LICENSE_STATUS.AVAILABLE,
       currentIssuerEmail: "",
       currentRecipient: "",
-      currentIssuedAt: "",
+      currentIssuedAt: null,
       updatedAt: now,
       updatedByEmail: actor
     };
@@ -584,7 +585,7 @@ async function saveContactRecord(db: Firestore, actor: string, payload: SaveCont
   if (!normalized.contactName) throw new Error("담당자명은 필수입니다.");
 
   await assertSolutionExists(db, normalized.solutionName);
-  const now = nowDateTimeString();
+  const now = Timestamp.now();
 
   if (!normalized.id) {
     const ref = doc(collection(db, COLLECTIONS.CONTACTS));
@@ -637,7 +638,7 @@ function buildHistoryEvent(
   }
 ): Omit<HistoryRecord, "id"> {
   return {
-    eventAt: nowDateTimeString(),
+    eventAt: Timestamp.now(),
     eventType,
     licenseNumber: license.licenseNumber,
     solutionName: license.solutionName,
@@ -678,4 +679,3 @@ function normalizeApiError(error: unknown): ApiError {
   }
   return new ApiError(error instanceof Error ? error.message : "요청 처리 중 오류가 발생했습니다.");
 }
-

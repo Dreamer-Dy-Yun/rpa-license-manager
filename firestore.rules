@@ -38,17 +38,25 @@ service cloud.firestore {
       return value is string;
     }
 
+    function isTimestamp(value) {
+      return value is timestamp;
+    }
+
+    function isTimestampOrNull(value) {
+      return value == null || isTimestamp(value);
+    }
+
     function validAuditCreate(data) {
-      return isString(data.createdAt)
+      return isTimestamp(data.createdAt)
         && isString(data.createdByEmail)
-        && isString(data.updatedAt)
+        && isTimestamp(data.updatedAt)
         && isString(data.updatedByEmail);
     }
 
     function validAuditUpdate(data) {
-      return isString(data.createdAt)
+      return isTimestamp(data.createdAt)
         && isString(data.createdByEmail)
-        && isString(data.updatedAt)
+        && isTimestamp(data.updatedAt)
         && isString(data.updatedByEmail)
         && data.createdAt == resource.data.createdAt
         && data.createdByEmail == resource.data.createdByEmail;
@@ -100,7 +108,7 @@ service cloud.firestore {
         && data.storedStatus in ['사용가능', '사용중']
         && isString(data.currentIssuerEmail)
         && isString(data.currentRecipient)
-        && isString(data.currentIssuedAt)
+        && isTimestampOrNull(data.currentIssuedAt)
         && isString(data.note);
     }
 
@@ -118,7 +126,7 @@ service cloud.firestore {
           'deleteSnapshot',
           'sourceType'
         ])
-        && isString(data.eventAt)
+        && isTimestamp(data.eventAt)
         && data.eventType in ['등록', '수정', '불출', '회수', '삭제']
         && isString(data.licenseNumber)
         && isString(data.solutionName)
@@ -176,7 +184,7 @@ service cloud.firestore {
         && data.key in ['만료예정기준일수', '타임존']
         && isString(data.value)
         && isString(data.description)
-        && isString(data.updatedAt)
+        && isTimestamp(data.updatedAt)
         && isString(data.updatedByEmail);
     }
 

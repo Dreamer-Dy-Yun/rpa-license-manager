@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { LICENSE_STATUS } from "./constants.js";
 import { evaluateLicense, sortLicenses } from "./licenseRules.js";
-import type { LicenseRecord } from "./types.js";
+import type { DateTimeValue, LicenseRecord } from "./types.js";
+
+function timestamp(value: string): DateTimeValue {
+  const date = new Date(value);
+  return {
+    seconds: Math.floor(date.getTime() / 1000),
+    nanoseconds: 0,
+    toDate: () => date
+  };
+}
 
 const base: LicenseRecord = {
   solutionName: "브리티",
@@ -15,11 +24,11 @@ const base: LicenseRecord = {
   storedStatus: LICENSE_STATUS.AVAILABLE,
   currentIssuerEmail: "",
   currentRecipient: "",
-  currentIssuedAt: "",
+  currentIssuedAt: null,
   note: "",
-  createdAt: "2026-01-01 00:00:00",
+  createdAt: timestamp("2026-01-01T00:00:00Z"),
   createdByEmail: "admin@example.com",
-  updatedAt: "2026-01-01 00:00:00",
+  updatedAt: timestamp("2026-01-01T00:00:00Z"),
   updatedByEmail: "admin@example.com"
 };
 

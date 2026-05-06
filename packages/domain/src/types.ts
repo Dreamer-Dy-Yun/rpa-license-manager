@@ -29,10 +29,16 @@ export interface UserContext {
   message: string;
 }
 
+export interface DateTimeValue {
+  seconds: number;
+  nanoseconds: number;
+  toDate: () => Date;
+}
+
 export interface AuditFields {
-  createdAt: string;
+  createdAt: DateTimeValue;
   createdByEmail: string;
-  updatedAt: string;
+  updatedAt: DateTimeValue;
   updatedByEmail: string;
 }
 
@@ -58,7 +64,7 @@ export interface LicenseRecord extends AuditFields {
   storedStatus: LicenseStatus;
   currentIssuerEmail: string;
   currentRecipient: string;
-  currentIssuedAt: string;
+  currentIssuedAt: DateTimeValue | null;
   note: string;
 }
 
@@ -70,7 +76,7 @@ export interface LicenseView extends LicenseRecord {
 
 export interface HistoryRecord {
   id: string;
-  eventAt: string;
+  eventAt: DateTimeValue;
   eventType: HistoryEventType;
   licenseNumber: string;
   solutionName: string;
@@ -104,7 +110,7 @@ export interface SystemSettingRecord {
   key: string;
   value: string;
   description: string;
-  updatedAt: string;
+  updatedAt: DateTimeValue | null;
   updatedByEmail: string;
 }
 
