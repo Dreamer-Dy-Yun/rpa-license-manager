@@ -13,6 +13,7 @@ import { formatDateTimeValue } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 import { FormActions, FormPanel, Stack, TableActions, TableEmpty, TablePanel } from "../../shared/ui/Surface";
+import { FirebaseUsagePanel } from "./FirebaseUsagePanel";
 
 interface SolutionsViewProps {
   solutions: SolutionRecord[];
@@ -158,6 +159,8 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
 
   return (
     <Stack>
+      <FirebaseUsagePanel />
+
       <FormPanel
         key={selected?.key ?? "setting"}
         onSubmit={async (event) => {
