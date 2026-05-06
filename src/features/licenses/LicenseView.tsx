@@ -11,7 +11,7 @@ import {
   type ReturnLicensePayload,
   type SaveLicensePayload
 } from "@rpa-license/domain";
-import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
+import { DateField, InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface LicenseViewProps {
   licenses: LicenseViewRecord[];
@@ -130,7 +130,7 @@ export function LicenseView({
           <SelectField name="classification" label="라이선스 구분" values={referenceData.classifications} defaultValue={editing?.classification} required />
           <SelectField name="deploymentType" label="배포 방식" values={referenceData.deploymentTypes} defaultValue={editing?.deploymentType} required />
           <SelectField name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={editing?.licenseRole} required />
-          <InputField name="startDate" label="시작일" type="date" value={dateValues.startDate} onChange={(event) => changeStartDate(event.target.value)} required />
+          <DateField name="startDate" label="시작일" value={dateValues.startDate} onValueChange={changeStartDate} required />
           <SelectField
             name="durationYears"
             label="기간(년)"
@@ -145,7 +145,7 @@ export function LicenseView({
             value={duration.months}
             onChange={(event) => changeDuration({ ...duration, months: event.target.value })}
           />
-          <InputField name="endDate" label="종료일" type="date" value={dateValues.endDate} onChange={(event) => changeEndDate(event.target.value)} required />
+          <DateField name="endDate" label="종료일" value={dateValues.endDate} onValueChange={changeEndDate} required />
           <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
           <div className="form-actions">
             <button className="primary-button" type="submit" disabled={!hasSolutions}>저장</button>

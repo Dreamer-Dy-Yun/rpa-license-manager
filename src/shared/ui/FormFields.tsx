@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import { addDaysDateOnly, isDateOnly } from "@rpa-license/domain";
 
 function fieldClassName(className?: string): string {
   return ["field", className].filter(Boolean).join(" ");
@@ -14,6 +15,37 @@ export function InputField({ label, className, ...props }: InputFieldProps) {
     <label className={fieldClassName(className)}>
       <span>{label}</span>
       <input {...props} />
+    </label>
+  );
+}
+
+export interface DateFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange"> {
+  label: string;
+  name: string;
+  value: string;
+  onValueChange: (value: string) => void;
+}
+
+export function DateField({ label, className, value, onValueChange, disabled, ...props }: DateFieldProps) {
+  const canStep = !disabled && isDateOnly(value);
+
+  function step(days: number) {
+    if (!isDateOnly(value)) {
+      return;
+    }
+    onValueChange(addDaysDateOnly(value, days));
+  }
+
+  return (
+    <label className={fieldClassName(className)}>
+      <span>{label}</span>
+      <div className="date-control">
+        <div className="date-stepper" aria-hidden={disabled}>
+          <button type="button" disabled={!canStep} onClick={() => step(1)} title="하루 증가" aria-label={`${label} 하루 증가`}>▲</button>
+          <button type="button" disabled={!canStep} onClick={() => step(-1)} title="하루 감소" aria-label={`${label} 하루 감소`}>▼</button>
+        </div>
+        <input {...props} type="date" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)} />
+      </div>
     </label>
   );
 }

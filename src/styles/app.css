@@ -357,6 +357,36 @@ button:disabled {
   resize: vertical;
 }
 
+.date-control {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 7px;
+  align-items: stretch;
+}
+
+.date-stepper {
+  display: grid;
+  gap: 4px;
+}
+
+.date-stepper button {
+  min-width: 34px;
+  min-height: 19px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #526071;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.date-stepper button:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #f4f7ff;
+}
+
 .field-full,
 .form-actions,
 .form-message {
