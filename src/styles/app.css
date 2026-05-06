@@ -436,15 +436,28 @@ button:disabled {
 }
 
 .date-control {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 7px;
-  align-items: stretch;
+  position: relative;
+}
+
+.date-control input[type="date"] {
+  padding-right: 76px;
 }
 
 .date-stepper {
+  position: absolute;
+  top: 50%;
+  right: 36px;
   display: grid;
-  gap: 4px;
+  gap: 2px;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.date-stepper .ui-button-stepper {
+  min-width: 26px;
+  min-height: 16px;
+  border-radius: 4px;
+  font-size: 9px;
 }
 
 .field-full,

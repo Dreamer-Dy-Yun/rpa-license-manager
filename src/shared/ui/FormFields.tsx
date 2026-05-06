@@ -41,11 +41,11 @@ export function DateField({ label, className, value, onValueChange, disabled, ..
     <label className={fieldClassName(className)}>
       <span>{label}</span>
       <div className="date-control">
+        <input {...props} type="date" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)} />
         <div className="date-stepper" aria-hidden={disabled}>
           <Button variant="stepper" disabled={!canStep} onClick={() => step(1)} title="하루 증가" aria-label={`${label} 하루 증가`}>▲</Button>
           <Button variant="stepper" disabled={!canStep} onClick={() => step(-1)} title="하루 감소" aria-label={`${label} 하루 감소`}>▼</Button>
         </div>
-        <input {...props} type="date" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)} />
       </div>
     </label>
   );
