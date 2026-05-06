@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { filterHistory, formatDateTimeValue, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
+import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField } from "../../shared/ui/FormFields";
 
 interface HistoryViewProps {
@@ -33,8 +34,8 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
         <InputField name="operatorEmail" label="작업자" />
         <InputField name="recipient" label="수령자" />
         <div className="form-actions">
-          <button className="secondary-button" type="submit">필터 적용</button>
-          <button className="ghost-button" type="button" onClick={() => setFilters({})}>초기화</button>
+          <Button variant="secondary" type="submit">필터 적용</Button>
+          <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
         </div>
       </form>
 

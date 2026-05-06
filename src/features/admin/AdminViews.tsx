@@ -10,6 +10,7 @@ import type {
   UserPermissionRecord
 } from "@rpa-license/domain";
 import { formatDateTimeValue } from "@rpa-license/domain";
+import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface SolutionsViewProps {
@@ -42,8 +43,8 @@ export function SolutionsView({ solutions, onSave, onDelete }: SolutionsViewProp
         <InputField name="manufacturerName" label="제조사명" defaultValue={editing?.manufacturerName} required />
         <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
         <div className="form-actions">
-          <button className="primary-button" type="submit">저장</button>
-          <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
+          <Button variant="primary" type="submit">저장</Button>
+          <Button variant="ghost" onClick={() => setEditing(null)}>초기화</Button>
         </div>
       </form>
 
@@ -67,8 +68,8 @@ export function SolutionsView({ solutions, onSave, onDelete }: SolutionsViewProp
                 <td>{row.connectedContactCount}</td>
                 <td>
                   <div className="inline-actions">
-                    <button type="button" onClick={() => setEditing(row)}>수정</button>
-                    <button type="button" onClick={() => removeSolution(row.solutionName, onDelete)}>삭제</button>
+                    <Button variant="table" onClick={() => setEditing(row)}>수정</Button>
+                    <Button variant="table" onClick={() => removeSolution(row.solutionName, onDelete)}>삭제</Button>
                   </div>
                 </td>
               </tr>
@@ -111,8 +112,8 @@ export function PermissionsView({ permissions, referenceData, onSave }: Permissi
         <SelectField name="role" label="권한 역할" values={referenceData.roles} defaultValue={editing?.role} required />
         <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
         <div className="form-actions">
-          <button className="primary-button" type="submit">저장</button>
-          <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
+          <Button variant="primary" type="submit">저장</Button>
+          <Button variant="ghost" onClick={() => setEditing(null)}>초기화</Button>
         </div>
       </form>
 
@@ -132,7 +133,11 @@ export function PermissionsView({ permissions, referenceData, onSave }: Permissi
                 <td>{row.email}</td>
                 <td>{row.role}</td>
                 <td>{row.note}</td>
-                <td><button type="button" onClick={() => setEditing(row)}>수정</button></td>
+                <td>
+                  <div className="inline-actions">
+                    <Button variant="table" onClick={() => setEditing(row)}>수정</Button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -171,7 +176,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         <InputField name="value" label="설정값" defaultValue={selected?.value} required />
         <TextAreaField name="description" label="설명" className="field-full" rows={3} defaultValue={selected?.description} />
         <div className="form-actions">
-          <button className="primary-button" type="submit" disabled={!selected}>저장</button>
+          <Button variant="primary" type="submit" disabled={!selected}>저장</Button>
         </div>
       </form>
 

@@ -1,4 +1,5 @@
 import type { DashboardCard } from "@rpa-license/domain";
+import { Button } from "../../shared/ui/Button";
 
 interface DashboardViewProps {
   cards: DashboardCard[];
@@ -13,7 +14,7 @@ export function DashboardView({ cards, onSelectSolution }: DashboardViewProps) {
   return (
     <section className="dashboard-grid">
       {cards.map((card) => (
-        <button className="dashboard-card" key={card.solutionName} type="button" onClick={() => onSelectSolution(card.solutionName)}>
+        <Button variant="card" key={card.solutionName} onClick={() => onSelectSolution(card.solutionName)}>
           <span className="card-title">{card.solutionName}</span>
           <span className="card-subtitle">{card.manufacturerName}</span>
           <dl className="metric-grid">
@@ -22,7 +23,7 @@ export function DashboardView({ cards, onSelectSolution }: DashboardViewProps) {
             <Metric label="만료예정" value={card.expiringSoonCount} />
             <Metric label="만료" value={card.expiredCount} />
           </dl>
-        </button>
+        </Button>
       ))}
     </section>
   );
@@ -36,4 +37,3 @@ function Metric({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
-

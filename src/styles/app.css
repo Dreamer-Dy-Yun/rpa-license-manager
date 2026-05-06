@@ -7,11 +7,9 @@
   --border-strong: #c7cfdd;
   --surface: #ffffff;
   --surface-soft: #f4f7fb;
-  --surface-tint: #eef6f4;
   --muted: #637083;
   --text: #17202a;
   --blue: #2454d6;
-  --teal: #0f766e;
   --green: #16794c;
   --amber: #9a5a00;
   --red: #b42318;
@@ -99,23 +97,6 @@ button:disabled {
   gap: 8px;
 }
 
-.menu-item {
-  width: 100%;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: #dbe4f3;
-  text-align: left;
-}
-
-.menu-item:hover,
-.menu-item.is-active {
-  background: #f8fafc;
-  color: #20242c;
-}
-
 .content {
   min-width: 0;
   padding: 24px;
@@ -150,10 +131,7 @@ button:disabled {
   justify-content: flex-end;
 }
 
-.primary-button,
-.secondary-button,
-.ghost-button,
-.icon-button {
+.ui-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -162,32 +140,109 @@ button:disabled {
   padding: 0 13px;
   border-radius: 8px;
   border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.1;
   white-space: nowrap;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.primary-button {
+.ui-button:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.ui-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(36, 84, 214, 0.16);
+}
+
+.ui-button-primary {
   border-color: var(--blue);
   background: var(--blue);
   color: white;
 }
 
-.secondary-button,
-.icon-button {
+.ui-button-primary:hover:not(:disabled) {
+  border-color: #1f48b8;
+  background: #1f48b8;
+}
+
+.ui-button-secondary {
   background: var(--surface);
   color: var(--text);
 }
 
-.secondary-button:hover,
-.icon-button:hover,
-.ghost-button:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-soft);
-}
-
-.ghost-button {
+.ui-button-ghost {
   background: transparent;
   color: var(--muted);
+}
+
+.ui-button-icon {
+  min-width: 38px;
+}
+
+.ui-button-menu {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border-color: transparent;
+  background: transparent;
+  color: #dbe4f3;
+  text-align: left;
+}
+
+.ui-button-menu:hover:not(:disabled),
+.ui-button-menu.is-active {
+  background: #f8fafc;
+  color: #20242c;
+}
+
+.ui-button-tab {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.ui-button-tab:hover:not(:disabled) {
+  background: #f8fafc;
+  color: var(--text);
+}
+
+.ui-button-tab.is-active {
+  background: white;
+  color: var(--text);
+  box-shadow: 0 1px 5px rgba(31, 41, 55, 0.12);
+}
+
+.ui-button-table {
+  min-height: 30px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.ui-button-stepper {
+  min-width: 34px;
+  min-height: 19px;
+  padding: 0;
+  border-color: var(--border-strong);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #526071;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.ui-button-stepper:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #f4f7ff;
 }
 
 .notice,
@@ -239,8 +294,10 @@ button:disabled {
   gap: 16px;
 }
 
-.dashboard-card {
+.ui-button-card {
   display: grid;
+  align-items: stretch;
+  justify-content: stretch;
   gap: 12px;
   min-height: 178px;
   padding: 18px;
@@ -250,10 +307,12 @@ button:disabled {
   box-shadow: var(--shadow);
   color: var(--text);
   text-align: left;
+  white-space: normal;
 }
 
-.dashboard-card:hover {
+.ui-button-card:hover:not(:disabled) {
   border-color: var(--blue);
+  background: var(--surface);
 }
 
 .card-title {
@@ -369,24 +428,6 @@ button:disabled {
   gap: 4px;
 }
 
-.date-stepper button {
-  min-width: 34px;
-  min-height: 19px;
-  padding: 0;
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  background: #ffffff;
-  color: #526071;
-  font-size: 10px;
-  line-height: 1;
-}
-
-.date-stepper button:hover:not(:disabled) {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: #f4f7ff;
-}
-
 .field-full,
 .form-actions,
 .form-message {
@@ -414,21 +455,6 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #eef2f7;
-}
-
-.subtabs button {
-  min-height: 34px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-}
-
-.subtabs button.is-active {
-  background: white;
-  color: var(--text);
-  box-shadow: 0 1px 5px rgba(31, 41, 55, 0.12);
 }
 
 .table-wrap {
@@ -464,15 +490,6 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.inline-actions button {
-  min-height: 30px;
-  padding: 0 9px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: white;
-  color: var(--text);
 }
 
 .status {

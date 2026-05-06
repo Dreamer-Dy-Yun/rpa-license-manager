@@ -35,3 +35,9 @@
 - 라이선스 등록 화면은 시작일과 기간(년/개월) 콤보박스 선택으로 종료일을 즉시 계산한다.
 - 저장 계약은 `startDate`, `endDate` 날짜 문자열을 유지한다.
 - 종료일을 직접 수정하면 기간 선택 상태는 해제한다.
+
+## 2026-05-06 UI 버튼 경계 정리
+
+- 화면에서 직접 `<button>` 스타일을 흩뿌리지 않고 `src/shared/ui/Button.tsx`를 통해 공통 버튼 계층을 사용한다.
+- 버튼 형태는 primary, secondary, ghost, icon, menu, tab, table, stepper, card variant로 구분한다.
+- 테이블 액션, 탭, 날짜 스테퍼처럼 작은 버튼도 같은 기본 focus/disabled/hover 규칙을 공유한다.

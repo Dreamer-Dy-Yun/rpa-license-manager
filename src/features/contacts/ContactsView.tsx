@@ -7,6 +7,7 @@ import {
   type ReferenceData,
   type SaveContactPayload
 } from "@rpa-license/domain";
+import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface ContactsViewProps {
@@ -55,8 +56,8 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
           <InputField name="email" label="이메일" type="email" defaultValue={editing?.email} />
           <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
           <div className="form-actions">
-            <button className="primary-button" type="submit" disabled={!hasSolutions}>저장</button>
-            <button className="ghost-button" type="button" onClick={() => setEditing(null)}>초기화</button>
+            <Button variant="primary" type="submit" disabled={!hasSolutions}>저장</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>초기화</Button>
           </div>
         </form>
       ) : null}
@@ -81,8 +82,8 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
         <InputField name="phoneNumber" label="전화번호" />
         <InputField name="email" label="이메일" />
         <div className="form-actions">
-          <button className="secondary-button" type="submit">필터 적용</button>
-          <button className="ghost-button" type="button" onClick={() => setFilters({})}>초기화</button>
+          <Button variant="secondary" type="submit">필터 적용</Button>
+          <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
         </div>
       </form>
 
@@ -111,8 +112,8 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
                 <td>
                   {canManage ? (
                     <div className="inline-actions">
-                      <button type="button" onClick={() => setEditing(row)}>수정</button>
-                      <button type="button" onClick={() => remove(row.id, onDelete)}>삭제</button>
+                      <Button variant="table" onClick={() => setEditing(row)}>수정</Button>
+                      <Button variant="table" onClick={() => remove(row.id, onDelete)}>삭제</Button>
                     </div>
                   ) : null}
                 </td>

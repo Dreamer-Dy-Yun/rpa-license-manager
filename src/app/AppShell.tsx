@@ -2,6 +2,7 @@ import { LogIn, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
 import type { BootstrapData, MenuItem } from "@rpa-license/domain";
 import type { User } from "firebase/auth";
 import type { ReactNode } from "react";
+import { Button } from "../shared/ui/Button";
 
 interface AppShellProps {
   data: BootstrapData | null;
@@ -51,14 +52,15 @@ export function AppShell({
 
         <nav className="menu" aria-label="주 메뉴">
           {menu.map((item: MenuItem) => (
-            <button
-              className={item.key === currentView ? "menu-item is-active" : "menu-item"}
+            <Button
+              active={item.key === currentView}
+              aria-current={item.key === currentView ? "page" : undefined}
               key={item.key}
-              type="button"
               onClick={() => onViewChange(item.key)}
+              variant="menu"
             >
               {item.label}
-            </button>
+            </Button>
           ))}
         </nav>
       </aside>
@@ -70,21 +72,21 @@ export function AppShell({
             <h1>{getTitle(menu, currentView)}</h1>
           </div>
           <div className="topbar-actions">
-            <button className="icon-button" type="button" onClick={onReload} disabled={busy} title="새로고침">
+            <Button variant="icon" onClick={onReload} disabled={busy} title="새로고침">
               <RefreshCw size={18} aria-hidden="true" />
               <span>새로고침</span>
-            </button>
+            </Button>
             {authConfigured ? (
               firebaseUser ? (
-                <button className="icon-button" type="button" onClick={onSignOut} disabled={busy || authLoading} title="로그아웃">
+                <Button variant="icon" onClick={onSignOut} disabled={busy || authLoading} title="로그아웃">
                   <LogOut size={18} aria-hidden="true" />
                   <span>로그아웃</span>
-                </button>
+                </Button>
               ) : (
-                <button className="primary-button" type="button" onClick={onSignIn} disabled={busy || authLoading} title="Google 로그인">
+                <Button variant="primary" onClick={onSignIn} disabled={busy || authLoading} title="Google 로그인">
                   <LogIn size={18} aria-hidden="true" />
                   <span>Google 로그인</span>
-                </button>
+                </Button>
               )
             ) : null}
           </div>

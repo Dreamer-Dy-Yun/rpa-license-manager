@@ -10,7 +10,7 @@
 - Firebase 클라이언트 초기화는 `src/shared/firebase`에만 둔다.
 - 업무 값, 타입, 계산 규칙은 `packages/domain`에 둔다.
 - Firestore 접근은 `src/shared/api/firestoreAppApi.ts`에 둔다.
-- 반복 입력 UI는 `src/shared/ui`에 둔다.
+- 반복 입력 UI와 공통 버튼 UI는 `src/shared/ui`에 둔다.
 - 권한 강제의 최종 경계는 `firestore.rules`에 둔다.
 - 배포와 CI/CD 결정은 `.github/workflows`, `firebase.json`, `docs/DEPLOYMENT.md`에 둔다.
 - 임의 업무 데이터는 만들지 않는다. 백엔드가 없거나 설정이 없으면 빈 계약 응답 또는 오류 상태를 드러낸다.
@@ -53,7 +53,7 @@ React 프론트엔드다. 화면은 API 계약을 호출하며, API 구현체가
 | `src/shared/api/*` | Firestore 직접 접근 API 계약, 화면별 데이터 로드, Spark 대체 구현체 |
 | `src/shared/firebase/*` | Firebase Web SDK 초기화와 Auth/Firestore 연결 |
 | `src/shared/lib/firestoreIds.ts` | Firestore 문서 ID 정규화 규칙 |
-| `src/shared/ui/*` | 화면 공통 입력 컴포넌트 |
+| `src/shared/ui/*` | 화면 공통 입력/버튼 컴포넌트 |
 | `src/features/auth` | 로그인 상태 표시/조작 |
 | `src/features/dashboard` | 솔루션별 카드 요약 화면 |
 | `src/features/licenses` | 라이선스 등록/수정/조회/불출/회수/삭제 화면 |

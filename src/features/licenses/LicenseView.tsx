@@ -11,6 +11,7 @@ import {
   type ReturnLicensePayload,
   type SaveLicensePayload
 } from "@rpa-license/domain";
+import { Button } from "../../shared/ui/Button";
 import { DateField, InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
 
 interface LicenseViewProps {
@@ -97,8 +98,8 @@ export function LicenseView({
   return (
     <section className="stack">
       <div className="subtabs">
-        {canEdit ? <button className={tab === "edit" ? "is-active" : ""} type="button" onClick={() => setTab("edit")}>등록/수정</button> : null}
-        <button className={tab === "list" ? "is-active" : ""} type="button" onClick={() => setTab("list")}>조회</button>
+        {canEdit ? <Button active={tab === "edit"} variant="tab" onClick={() => setTab("edit")}>등록/수정</Button> : null}
+        <Button active={tab === "list"} variant="tab" onClick={() => setTab("list")}>조회</Button>
       </div>
 
       {tab === "edit" && canEdit ? (
@@ -148,8 +149,8 @@ export function LicenseView({
           <DateField name="endDate" label="종료일" value={dateValues.endDate} onValueChange={changeEndDate} required />
           <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
           <div className="form-actions">
-            <button className="primary-button" type="submit" disabled={!hasSolutions}>저장</button>
-            <button className="ghost-button" type="button" onClick={resetLicenseForm}>초기화</button>
+            <Button variant="primary" type="submit" disabled={!hasSolutions}>저장</Button>
+            <Button variant="ghost" onClick={resetLicenseForm}>초기화</Button>
           </div>
         </form>
       ) : null}
@@ -178,8 +179,8 @@ export function LicenseView({
             <InputField name="recipient" label="수령자" />
             <SelectField name="expirationFlag" label="만료 구분" values={["만료", "만료예정"]} defaultValue={filters.expirationFlag} includeAll />
             <div className="form-actions">
-              <button className="secondary-button" type="submit">필터 적용</button>
-              <button className="ghost-button" type="button" onClick={() => setFilters({})}>초기화</button>
+              <Button variant="secondary" type="submit">필터 적용</Button>
+              <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
             </div>
           </form>
 
@@ -211,14 +212,14 @@ export function LicenseView({
                     <td>{row.currentRecipient}</td>
                     <td>
                       <div className="inline-actions">
-                        {canEdit ? <button type="button" onClick={() => { setEditing(row); setTab("edit"); }}>수정</button> : null}
+                        {canEdit ? <Button variant="table" onClick={() => { setEditing(row); setTab("edit"); }}>수정</Button> : null}
                         {canEdit && row.storedStatus === LICENSE_STATUS.AVAILABLE && !row.isExpired ? (
-                          <button type="button" onClick={() => issue(row.licenseNumber, onIssue)}>불출</button>
+                          <Button variant="table" onClick={() => issue(row.licenseNumber, onIssue)}>불출</Button>
                         ) : null}
                         {canEdit && row.storedStatus === LICENSE_STATUS.IN_USE ? (
-                          <button type="button" onClick={() => returnRow(row.licenseNumber, onReturn)}>회수</button>
+                          <Button variant="table" onClick={() => returnRow(row.licenseNumber, onReturn)}>회수</Button>
                         ) : null}
-                        {canDelete ? <button type="button" onClick={() => remove(row.licenseNumber, onDelete)}>삭제</button> : null}
+                        {canDelete ? <Button variant="table" onClick={() => remove(row.licenseNumber, onDelete)}>삭제</Button> : null}
                       </div>
                     </td>
                   </tr>
