@@ -41,3 +41,4 @@
 - 화면에서 직접 `<button>` 스타일을 흩뿌리지 않고 `src/shared/ui/Button.tsx`를 통해 공통 버튼 계층을 사용한다.
 - 버튼 형태는 primary, secondary, ghost, icon, menu, tab, table, stepper, card variant로 구분한다.
 - 테이블 액션, 탭, 날짜 스테퍼처럼 작은 버튼도 같은 기본 focus/disabled/hover 규칙을 공유한다.
+- 실수로 생짜 `<button>`이 들어와도 브라우저 기본 버튼으로 보이지 않도록 전역 fallback 스타일을 둔다.
