@@ -28,10 +28,11 @@ interface LicenseViewProps {
 interface DurationState {
   years: string;
   months: string;
-  activeKey: string;
 }
 
-const EMPTY_DURATION: DurationState = { years: "", months: "", activeKey: "" };
+const EMPTY_DURATION: DurationState = { years: "", months: "" };
+const YEAR_OPTIONS = Array.from({ length: 10 }, (_, index) => String(index + 1));
+const MONTH_OPTIONS = Array.from({ length: 11 }, (_, index) => String(index + 1));
 
 export function LicenseView({
   licenses,
@@ -66,27 +67,15 @@ export function LicenseView({
     setDuration(EMPTY_DURATION);
   }
 
-  function applyDuration(years: number, months: number, activeKey: string) {
-    const safeYears = Number.isInteger(years) && years > 0 ? years : 0;
-    const safeMonths = Number.isInteger(months) && months > 0 ? months : 0;
-    const endDate = endDateFromDuration(dateValues.startDate, safeYears, safeMonths);
+  function changeDuration(nextDuration: DurationState) {
+    const years = Number(nextDuration.years || "0");
+    const months = Number(nextDuration.months || "0");
+    const endDate = endDateFromDuration(dateValues.startDate, years, months);
 
-    if (!endDate) {
-      return;
+    setDuration(nextDuration);
+    if (endDate) {
+      setDateValues((current) => ({ ...current, endDate }));
     }
-
-    setDuration({
-      years: safeYears ? String(safeYears) : "",
-      months: safeMonths ? String(safeMonths) : "",
-      activeKey
-    });
-    setDateValues((current) => ({ ...current, endDate }));
-  }
-
-  function applyCustomDuration() {
-    const years = Number(duration.years || "0");
-    const months = Number(duration.months || "0");
-    applyDuration(years, months, "custom");
   }
 
   function changeStartDate(startDate: string) {
@@ -95,7 +84,7 @@ export function LicenseView({
       const months = Number(duration.months || "0");
       return {
         startDate,
-        endDate: duration.activeKey ? endDateFromDuration(startDate, years, months) : current.endDate
+        endDate: years + months > 0 ? endDateFromDuration(startDate, years, months) : current.endDate
       };
     });
   }
@@ -142,44 +131,20 @@ export function LicenseView({
           <SelectField name="deploymentType" label="배포 방식" values={referenceData.deploymentTypes} defaultValue={editing?.deploymentType} required />
           <SelectField name="licenseRole" label="역할" values={referenceData.licenseRoles} defaultValue={editing?.licenseRole} required />
           <InputField name="startDate" label="시작일" type="date" value={dateValues.startDate} onChange={(event) => changeStartDate(event.target.value)} required />
-          <fieldset className="duration-field field-full">
-            <legend>기간 계산</legend>
-            <div className="duration-grid">
-              <InputField
-                className="duration-number-field"
-                name="durationYears"
-                label="연"
-                type="number"
-                min={0}
-                step={1}
-                inputMode="numeric"
-                value={duration.years}
-                onChange={(event) => setDuration((current) => ({ ...current, years: event.target.value, activeKey: "" }))}
-              />
-              <InputField
-                className="duration-number-field"
-                name="durationMonths"
-                label="개월"
-                type="number"
-                min={0}
-                step={1}
-                inputMode="numeric"
-                value={duration.months}
-                onChange={(event) => setDuration((current) => ({ ...current, months: event.target.value, activeKey: "" }))}
-              />
-              <button className={duration.activeKey === "custom" ? "secondary-button is-active" : "secondary-button"} type="button" onClick={applyCustomDuration} disabled={!dateValues.startDate}>
-                적용
-              </button>
-              <div className="duration-shortcuts" aria-label="기간 빠른 선택">
-                <DurationButton label="1년" active={duration.activeKey === "1y"} disabled={!dateValues.startDate} onClick={() => applyDuration(1, 0, "1y")} />
-                <DurationButton label="2년" active={duration.activeKey === "2y"} disabled={!dateValues.startDate} onClick={() => applyDuration(2, 0, "2y")} />
-                <DurationButton label="3년" active={duration.activeKey === "3y"} disabled={!dateValues.startDate} onClick={() => applyDuration(3, 0, "3y")} />
-                <DurationButton label="1개월" active={duration.activeKey === "1m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 1, "1m")} />
-                <DurationButton label="2개월" active={duration.activeKey === "2m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 2, "2m")} />
-                <DurationButton label="6개월" active={duration.activeKey === "6m"} disabled={!dateValues.startDate} onClick={() => applyDuration(0, 6, "6m")} />
-              </div>
-            </div>
-          </fieldset>
+          <SelectField
+            name="durationYears"
+            label="기간(년)"
+            values={YEAR_OPTIONS}
+            value={duration.years}
+            onChange={(event) => changeDuration({ ...duration, years: event.target.value })}
+          />
+          <SelectField
+            name="durationMonths"
+            label="기간(개월)"
+            values={MONTH_OPTIONS}
+            value={duration.months}
+            onChange={(event) => changeDuration({ ...duration, months: event.target.value })}
+          />
           <InputField name="endDate" label="종료일" type="date" value={dateValues.endDate} onChange={(event) => changeEndDate(event.target.value)} required />
           <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
           <div className="form-actions">
@@ -265,14 +230,6 @@ export function LicenseView({
         </>
       ) : null}
     </section>
-  );
-}
-
-function DurationButton({ label, active, disabled, onClick }: { label: string; active: boolean; disabled: boolean; onClick: () => void }) {
-  return (
-    <button className={active ? "choice-button is-active" : "choice-button"} type="button" disabled={disabled} onClick={onClick}>
-      {label}
-    </button>
   );
 }
 
