@@ -12,8 +12,9 @@
     "typecheck": "npm run domain:build && tsc --noEmit",
     "test": "npm run domain:build && vitest run",
     "build": "npm run domain:build && tsc --noEmit && vite build",
+    "style:audit": "node scripts/audit-styles.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "validate": "npm run typecheck && npm run test && npm run build"
+    "validate": "npm run typecheck && npm run test && npm run style:audit && npm run build"
   },
   "dependencies": {
     "@rpa-license/domain": "file:packages/domain",

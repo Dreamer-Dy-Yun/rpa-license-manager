@@ -1,5 +1,6 @@
 import type { DashboardCard } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
+import { EmptyState } from "../../shared/ui/Surface";
 
 interface DashboardViewProps {
   cards: DashboardCard[];
@@ -8,7 +9,7 @@ interface DashboardViewProps {
 
 export function DashboardView({ cards, onSelectSolution }: DashboardViewProps) {
   if (cards.length === 0) {
-    return <section className="empty-state">표시할 솔루션 카드가 없습니다.</section>;
+    return <EmptyState>표시할 솔루션 카드가 없습니다.</EmptyState>;
   }
 
   return (

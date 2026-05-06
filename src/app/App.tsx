@@ -8,6 +8,7 @@ import { HistoryView } from "../features/history/HistoryView";
 import { LicenseView } from "../features/licenses/LicenseView";
 import { createAppApi } from "../shared/api/createAppApi";
 import type { AppApi } from "../shared/api/appApi";
+import { EmptyState, Notice } from "../shared/ui/Surface";
 import { AppShell } from "./AppShell";
 
 type LoadSection = "dashboard" | "licenses" | "history" | "contacts" | "solutions" | "permissions" | "settings";
@@ -233,8 +234,8 @@ export function App() {
         setCurrentView("dashboard");
       }}
     >
-      {error ? <section className="notice notice-danger">{error}</section> : null}
-      {!data ? <section className="empty-state">초기 데이터를 불러오는 중입니다.</section> : renderView()}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
+      {!data ? <EmptyState>초기 데이터를 불러오는 중입니다.</EmptyState> : renderView()}
     </AppShell>
   );
 
@@ -317,7 +318,7 @@ export function App() {
       );
     }
 
-    return <section className="empty-state">알 수 없는 화면입니다.</section>;
+    return <EmptyState>알 수 없는 화면입니다.</EmptyState>;
   }
 }
 

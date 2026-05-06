@@ -9,6 +9,16 @@ import {
 } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
+import {
+  FilterPanel,
+  FormActions,
+  FormMessage,
+  FormPanel,
+  Stack,
+  TableActions,
+  TableEmpty,
+  TablePanel
+} from "../../shared/ui/Surface";
 
 interface ContactsViewProps {
   contacts: ContactRecord[];
@@ -25,10 +35,9 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
   const hasSolutions = referenceData.solutions.length > 0;
 
   return (
-    <section className="stack">
+    <Stack>
       {canManage ? (
-        <form
-          className="panel form-grid"
+        <FormPanel
           key={editing?.id ?? "new-contact"}
           onSubmit={async (event) => {
             event.preventDefault();
@@ -47,7 +56,7 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
             event.currentTarget.reset();
           }}
         >
-          {!hasSolutions ? <p className="form-message">먼저 솔루션을 등록해야 연락처를 저장할 수 있습니다.</p> : null}
+          {!hasSolutions ? <FormMessage>먼저 솔루션을 등록해야 연락처를 저장할 수 있습니다.</FormMessage> : null}
           <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={editing?.solutionName} required disabled={!hasSolutions} />
           <InputField name="organizationName" label="소속명" defaultValue={editing?.organizationName} required />
           <InputField name="contactName" label="담당자명" defaultValue={editing?.contactName} required />
@@ -55,15 +64,14 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
           <InputField name="phoneNumber" label="전화번호" defaultValue={editing?.phoneNumber} />
           <InputField name="email" label="이메일" type="email" defaultValue={editing?.email} />
           <TextAreaField name="note" label="비고" className="field-full" rows={3} defaultValue={editing?.note} />
-          <div className="form-actions">
+          <FormActions>
             <Button variant="primary" type="submit" disabled={!hasSolutions}>저장</Button>
             <Button variant="ghost" onClick={() => setEditing(null)}>초기화</Button>
-          </div>
-        </form>
+          </FormActions>
+        </FormPanel>
       ) : null}
 
-      <form
-        className="panel filter-grid"
+      <FilterPanel
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -81,13 +89,13 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
         <InputField name="contactName" label="담당자명" />
         <InputField name="phoneNumber" label="전화번호" />
         <InputField name="email" label="이메일" />
-        <div className="form-actions">
+        <FormActions>
           <Button variant="secondary" type="submit">필터 적용</Button>
           <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-        </div>
-      </form>
+        </FormActions>
+      </FilterPanel>
 
-      <div className="panel table-wrap">
+      <TablePanel>
         <table className="data-table">
           <thead>
             <tr>
@@ -111,19 +119,19 @@ export function ContactsView({ contacts, referenceData, canManage, onSave, onDel
                 <td>{row.email}</td>
                 <td>
                   {canManage ? (
-                    <div className="inline-actions">
+                    <TableActions>
                       <Button variant="table" onClick={() => setEditing(row)}>수정</Button>
                       <Button variant="table" onClick={() => remove(row.id, onDelete)}>삭제</Button>
-                    </div>
+                    </TableActions>
                   ) : null}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {rows.length === 0 ? <p className="table-empty">조회 결과가 없습니다.</p> : null}
-      </div>
-    </section>
+        {rows.length === 0 ? <TableEmpty>조회 결과가 없습니다.</TableEmpty> : null}
+      </TablePanel>
+    </Stack>
   );
 }
 

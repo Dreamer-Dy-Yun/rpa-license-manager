@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { filterHistory, formatDateTimeValue, type HistoryFilters, type HistoryRecord, type ReferenceData } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { InputField, SelectField } from "../../shared/ui/FormFields";
+import { FilterPanel, FormActions, Stack, TableEmpty, TablePanel } from "../../shared/ui/Surface";
 
 interface HistoryViewProps {
   history: HistoryRecord[];
@@ -13,9 +14,8 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
   const rows = useMemo(() => filterHistory(history, filters), [history, filters]);
 
   return (
-    <section className="stack">
-      <form
-        className="panel filter-grid"
+    <Stack>
+      <FilterPanel
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -33,13 +33,13 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
         <InputField name="licenseNumber" label="라이선스 번호" />
         <InputField name="operatorEmail" label="작업자" />
         <InputField name="recipient" label="수령자" />
-        <div className="form-actions">
+        <FormActions>
           <Button variant="secondary" type="submit">필터 적용</Button>
           <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-        </div>
-      </form>
+        </FormActions>
+      </FilterPanel>
 
-      <div className="panel table-wrap">
+      <TablePanel>
         <table className="data-table">
           <thead>
             <tr>
@@ -71,8 +71,8 @@ export function HistoryView({ history, referenceData }: HistoryViewProps) {
             ))}
           </tbody>
         </table>
-        {rows.length === 0 ? <p className="table-empty">조회 결과가 없습니다.</p> : null}
-      </div>
-    </section>
+        {rows.length === 0 ? <TableEmpty>조회 결과가 없습니다.</TableEmpty> : null}
+      </TablePanel>
+    </Stack>
   );
 }

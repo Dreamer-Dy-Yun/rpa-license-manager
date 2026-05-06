@@ -3,6 +3,7 @@ import type { BootstrapData, MenuItem } from "@rpa-license/domain";
 import type { User } from "firebase/auth";
 import type { ReactNode } from "react";
 import { Button } from "../shared/ui/Button";
+import { LoadingState, Notice } from "../shared/ui/Surface";
 
 interface AppShellProps {
   data: BootstrapData | null;
@@ -92,9 +93,9 @@ export function AppShell({
           </div>
         </header>
 
-        {data?.systemMessage ? <section className="notice notice-info">{data.systemMessage}</section> : null}
-        {data?.user.message ? <section className="notice">{data.user.message}</section> : null}
-        {busy ? <section className="loading">요청 처리 중...</section> : null}
+        {data?.systemMessage ? <Notice tone="info">{data.systemMessage}</Notice> : null}
+        {data?.user.message ? <Notice>{data.user.message}</Notice> : null}
+        {busy ? <LoadingState>요청 처리 중...</LoadingState> : null}
 
         {children}
       </main>

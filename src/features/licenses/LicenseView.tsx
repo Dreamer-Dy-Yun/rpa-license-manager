@@ -13,6 +13,17 @@ import {
 } from "@rpa-license/domain";
 import { Button } from "../../shared/ui/Button";
 import { DateField, InputField, SelectField, TextAreaField } from "../../shared/ui/FormFields";
+import {
+  FilterPanel,
+  FormActions,
+  FormMessage,
+  FormPanel,
+  Stack,
+  TableActions,
+  TableEmpty,
+  TablePanel,
+  TabList
+} from "../../shared/ui/Surface";
 
 interface LicenseViewProps {
   licenses: LicenseViewRecord[];
@@ -96,15 +107,14 @@ export function LicenseView({
   }
 
   return (
-    <section className="stack">
-      <div className="subtabs">
+    <Stack>
+      <TabList>
         {canEdit ? <Button active={tab === "edit"} variant="tab" onClick={() => setTab("edit")}>등록/수정</Button> : null}
         <Button active={tab === "list"} variant="tab" onClick={() => setTab("list")}>조회</Button>
-      </div>
+      </TabList>
 
       {tab === "edit" && canEdit ? (
-        <form
-          className="panel form-grid"
+        <FormPanel
           key={editing?.licenseNumber ?? "new-license"}
           onSubmit={async (event) => {
             event.preventDefault();
@@ -124,7 +134,7 @@ export function LicenseView({
             event.currentTarget.reset();
           }}
         >
-          {!hasSolutions ? <p className="form-message">먼저 솔루션을 등록해야 라이선스를 저장할 수 있습니다.</p> : null}
+          {!hasSolutions ? <FormMessage>먼저 솔루션을 등록해야 라이선스를 저장할 수 있습니다.</FormMessage> : null}
           <SelectField name="solutionName" label="솔루션명" values={referenceData.solutions} defaultValue={editing?.solutionName} required disabled={!hasSolutions} />
           <InputField name="customerName" label="고객사/기관명" defaultValue={editing?.customerName} required />
           <InputField name="licenseNumber" label="라이선스 번호" defaultValue={editing?.licenseNumber} required readOnly={Boolean(editing)} />
@@ -148,17 +158,16 @@ export function LicenseView({
           />
           <DateField name="endDate" label="종료일" value={dateValues.endDate} onValueChange={changeEndDate} required />
           <TextAreaField name="note" label="비고" className="field-full" defaultValue={editing?.note} rows={3} />
-          <div className="form-actions">
+          <FormActions>
             <Button variant="primary" type="submit" disabled={!hasSolutions}>저장</Button>
             <Button variant="ghost" onClick={resetLicenseForm}>초기화</Button>
-          </div>
-        </form>
+          </FormActions>
+        </FormPanel>
       ) : null}
 
       {tab === "list" ? (
         <>
-          <form
-            className="panel filter-grid"
+          <FilterPanel
             onSubmit={(event) => {
               event.preventDefault();
               const data = new FormData(event.currentTarget);
@@ -178,13 +187,13 @@ export function LicenseView({
             <InputField name="customerName" label="고객사/기관명" />
             <InputField name="recipient" label="수령자" />
             <SelectField name="expirationFlag" label="만료 구분" values={["만료", "만료예정"]} defaultValue={filters.expirationFlag} includeAll />
-            <div className="form-actions">
+            <FormActions>
               <Button variant="secondary" type="submit">필터 적용</Button>
               <Button variant="ghost" onClick={() => setFilters({})}>초기화</Button>
-            </div>
-          </form>
+            </FormActions>
+          </FilterPanel>
 
-          <div className="panel table-wrap">
+          <TablePanel>
             <table className="data-table">
               <thead>
                 <tr>
@@ -211,7 +220,7 @@ export function LicenseView({
                     <td>{row.endDate}</td>
                     <td>{row.currentRecipient}</td>
                     <td>
-                      <div className="inline-actions">
+                      <TableActions>
                         {canEdit ? <Button variant="table" onClick={() => { setEditing(row); setTab("edit"); }}>수정</Button> : null}
                         {canEdit && row.storedStatus === LICENSE_STATUS.AVAILABLE && !row.isExpired ? (
                           <Button variant="table" onClick={() => issue(row.licenseNumber, onIssue)}>불출</Button>
@@ -220,17 +229,17 @@ export function LicenseView({
                           <Button variant="table" onClick={() => returnRow(row.licenseNumber, onReturn)}>회수</Button>
                         ) : null}
                         {canDelete ? <Button variant="table" onClick={() => remove(row.licenseNumber, onDelete)}>삭제</Button> : null}
-                      </div>
+                      </TableActions>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {rows.length === 0 ? <p className="table-empty">조회 결과가 없습니다.</p> : null}
-          </div>
+            {rows.length === 0 ? <TableEmpty>조회 결과가 없습니다.</TableEmpty> : null}
+          </TablePanel>
         </>
       ) : null}
-    </section>
+    </Stack>
   );
 }
 
